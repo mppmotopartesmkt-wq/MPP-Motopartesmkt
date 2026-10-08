@@ -1,0 +1,19 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://iyhgtpemgywwanqqvtpe.supabase.co';
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGd0cGVtZ3l3d2FucXF2dHBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0Nzk3NzcsImV4cCI6MjEwNzA1NTc3N30.6Vnu6AA0-x0pOEKcM0a-Kb9DzS4bwGPDi8Uyfr45WHk';
+
+export const isSupabaseConfigured = () => {
+  return (
+    supabaseUrl !== 'https://placeholder.supabase.co' &&
+    supabaseUrl !== 'https://your-project-id.supabase.co' &&
+    supabaseAnonKey !== 'placeholder-key' &&
+    supabaseAnonKey !== 'your-anon-key-here' &&
+    supabaseUrl.startsWith('https://')
+  );
+};
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

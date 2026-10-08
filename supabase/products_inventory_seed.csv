@@ -1,0 +1,9 @@
+sku,name,slug,price,discount_price,stock_qty,category,brand,rating,reviews_count,length_mm,width_mm,height_mm,package_details,cbm_pc,gross_weight_kg,net_weight_kg,is_active
+HELM-SHOEI-RF1400,Shoei RF-1400 Full Face Helmet,shoei-rf-1400-full-face-helmet,2199000.00,,28,Helmets,Shoei,5.0,842,380.00,290.00,280.00,Caja reforzada con funda protectora de felpa,0.030856,2.350,1.620,true
+JACK-ALP-TGPRV4,Alpinestars T-GP R V4 Jacket,alpinestars-t-gp-r-v4-jacket,1299000.00,,35,Riding Gear,Alpinestars,5.0,623,600.00,420.00,120.00,Funda para prendas con percha reforzada,0.030240,2.800,2.450,true
+EXH-AKRA-SHORTY,Akrapovic Shorty Exhaust,akrapovic-shorty-exhaust,2850000.00,,14,Exhaust,Akrapovic,5.0,512,520.00,220.00,180.00,Caja con espuma preformada a medida,0.020592,3.400,2.200,true
+TIRE-PIR-ROSSO4,Pirelli Diablo Rosso IV Rear Tire,pirelli-diablo-rosso-iv-rear-tire,890000.00,,42,Tires,Pirelli,5.0,721,650.00,650.00,190.00,Envoltura con fleje protector antihumedad,0.080275,6.900,6.800,true
+ACC-QUAD-MOUNT,Quad Lock Motorcycle Phone Mount,quad-lock-motorcycle-phone-mount,260000.00,,85,Accessories,Quad Lock,5.0,1125,150.00,120.00,60.00,Caja expositora con 3 anillos adaptadores,0.001080,0.320,0.190,true
+GLOV-DAIN-FM6,Dainese Full Metal 6 Gloves,dainese-full-metal-6-gloves,590000.00,,26,Gloves,Dainese,5.0,431,360.00,180.00,90.00,Caja de coleccionista con certificados,0.005832,0.780,0.460,true
+BATT-YUA-YTZ10S,Yuasa High Performance AGM Battery,yuasa-high-performance-agm-battery,380000.00,,50,Batteries,Yuasa,4.9,294,160.00,100.00,100.00,Caja reforzada con insertos antigolpes,0.001600,3.400,3.200,true
+MAINT-MOTUL-7100,Motul 7100 4T 10W-40 Synthetic Oil (4L),motul-7100-4t-10w-40-synthetic-oil-4l,270000.00,,70,Maintenance,Motul,5.0,880,280.00,190.00,130.00,Galón de 4 Litros sellado con vertedor,0.006916,3.850,3.650,true
