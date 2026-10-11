@@ -237,6 +237,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+        onSelectProduct={(p) => setSelectedProduct(p)}
+        allProducts={products}
       />
 
       <SearchModal
