@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   ShieldCheck,
@@ -9,6 +9,10 @@ import {
   AlertTriangle,
   ArrowRight,
   Package,
+  ArrowLeft,
+  Lock,
+  Truck,
+  FileText,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +41,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] = useState<CheckoutResult | null>(null);
+
+  // Lock background scroll when checkout is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -93,290 +122,459 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-dark-900 border border-dark-800 rounded-xl w-full max-w-3xl overflow-hidden shadow-2xl text-gray-100 my-8">
-        
-        {/* Header */}
-        <div className="p-5 border-b border-dark-800 flex items-center justify-between bg-dark-950">
-          <div className="flex items-center gap-3">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-heading"
+      className="fixed inset-0 z-[80] overflow-y-auto bg-white text-gray-900 animate-fadeIn"
+    >
+      {/* 1. TOP STICKY BAR (IDENTICAL TO SINGLE PRODUCT SPEC) */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          
+          {/* Left: Volver button & Breadcrumb */}
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <button
+              onClick={onClose}
+              className="inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-wider text-black hover:text-lime-dark transition-colors shrink-0 py-2 px-1"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver a la Tienda</span>
+            </button>
+
+            <span className="hidden sm:inline-block text-gray-300">|</span>
+
+            <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-2 text-xs text-gray-500 truncate">
+              <span>Inicio</span>
+              <span>/</span>
+              <span>Carrito</span>
+              <span>/</span>
+              <span className="text-gray-900 font-semibold truncate">
+                Finalizar Compra
+              </span>
+            </nav>
+          </div>
+
+          {/* Center: Branding */}
+          <div className="hidden sm:flex items-center gap-2">
             <img
               src="/mpp-logo.jpg"
               alt="MPP"
-              className="w-10 h-10 rounded-lg object-contain bg-black border border-lime/40 p-0.5"
+              className="w-8 h-8 rounded-lg object-contain bg-black border border-gray-200 p-0.5"
             />
-            <div>
-              <h2 className="text-base font-black uppercase tracking-wider text-white">
-                FINALIZAR PEDIDO — MPP CHECKOUT
-              </h2>
-              <p className="text-[11px] text-gray-400">
-                Transacción segura con control de inventario atómico
-              </p>
-            </div>
+            <span className="text-xs font-black uppercase tracking-wider text-black">
+              MPP MOTOPARTES • CHECKOUT SEGURO
+            </span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-dark-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Content */}
+          {/* Right: Security & Close Button */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Transacción Cifrada 256-bit</span>
+            </span>
+
+            <button
+              onClick={onClose}
+              className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 hover:text-black transition-colors"
+              title="Cerrar (Esc)"
+              aria-label="Cerrar checkout"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      {/* 2. MAIN CHECKOUT VIEWPORT */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {completedOrder ? (
-          /* SUCCESS SCREEN */
-          <div className="p-8 text-center space-y-6">
-            <div className="w-16 h-16 bg-lime/20 text-lime rounded-full flex items-center justify-center mx-auto border-2 border-lime animate-bounce">
-              <CheckCircle className="w-9 h-9" />
+          /* ========================================================================= */
+          /* SUCCESS SCREEN (CLEAN WHITE RECEIPT) */
+          /* ========================================================================= */
+          <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 space-y-8 animate-fadeIn">
+            
+            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 shadow-md">
+              <CheckCircle className="w-10 h-10" />
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-lime tracking-widest uppercase">
+              <span className="text-xs font-black text-emerald-700 tracking-widest uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 ¡ORDEN CONFIRMADA EXITOSAMENTE!
               </span>
-              <h3 className="text-2xl font-black text-white">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-black uppercase tracking-tight">
                 Gracias por tu compra, {fullName}
-              </h3>
-              <p className="text-xs text-gray-400 max-w-md mx-auto">
-                Hemos reservado y descontado tu inventario en la base de datos de manera atómica. Recibirás tu guía de despacho en breve.
+              </h2>
+              <p className="text-sm text-gray-600 max-w-lg mx-auto">
+                Hemos reservado y descontado tu inventario en la base de datos de manera atómica. Tu pedido ha sido enviado al equipo de bodega y logística.
               </p>
             </div>
 
             {/* Order Details Card */}
-            <div className="bg-dark-950 border border-dark-800 rounded-lg p-5 max-w-md mx-auto text-left text-xs space-y-3">
-              <div className="flex justify-between border-b border-dark-800 pb-2">
-                <span className="text-gray-400">Número de Pedido:</span>
-                <span className="font-mono font-bold text-lime">{completedOrder.order_number}</span>
+            <div className="bg-[#f8f9fa] border border-gray-200 rounded-2xl p-6 sm:p-8 text-left text-sm space-y-4 shadow-sm">
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                <span className="text-gray-500 font-medium">Número de Pedido:</span>
+                <span className="font-mono font-black text-black text-base">{completedOrder.order_number}</span>
               </div>
-              <div className="flex justify-between border-b border-dark-800 pb-2">
-                <span className="text-gray-400">Documento DIAN:</span>
-                <span className="text-white font-medium">{docType} {docNumber}</span>
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                <span className="text-gray-500 font-medium">Factura Electrónica (DIAN):</span>
+                <span className="text-gray-900 font-bold">{docType} {docNumber}</span>
               </div>
-              <div className="flex justify-between border-b border-dark-800 pb-2">
-                <span className="text-gray-400">Destino de Entrega:</span>
-                <span className="text-white font-medium">{address}, {city}</span>
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                <span className="text-gray-500 font-medium">Destino de Envío:</span>
+                <span className="text-gray-900 font-bold">{address}, {city}</span>
               </div>
-              <div className="flex justify-between border-b border-dark-800 pb-2">
-                <span className="text-gray-400">Método de Pago:</span>
-                <span className="text-white uppercase font-bold">{paymentMethod}</span>
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                <span className="text-gray-500 font-medium">Método de Pago Seleccionado:</span>
+                <span className="text-black uppercase font-extrabold">{paymentMethod}</span>
               </div>
-              <div className="flex justify-between pt-1 text-sm font-extrabold text-white">
+              <div className="flex justify-between items-center pt-2 text-lg font-black text-black">
                 <span>Total Facturado:</span>
-                <span className="text-lime">{formatCurrency(completedOrder.total_amount)}</span>
+                <span className="text-black">{formatCurrency(completedOrder.total_amount)}</span>
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="bg-lime hover:bg-lime-bright text-black font-black py-3 px-8 rounded text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-2"
-            >
-              <span>Volver a la tienda</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <button
+                onClick={onClose}
+                className="bg-black hover:bg-neutral-800 text-white font-black py-4 px-8 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md inline-flex items-center justify-center gap-2"
+              >
+                <span>Volver a la Tienda</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
           </div>
         ) : (
-          /* CHECKOUT FORM */
-          <form onSubmit={handleSubmitOrder} className="p-6 space-y-6">
+          /* ========================================================================= */
+          /* CHECKOUT FORM (2 COLUMNS: FORM + STICKY SUMMARY) */
+          /* ========================================================================= */
+          <form onSubmit={handleSubmitOrder} className="space-y-8">
+            
             {errorMessage && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg text-xs flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{errorMessage}</span>
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                <span className="font-medium">{errorMessage}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
               
-              {/* LEFT COLUMN: DIAN & SHIPPING INFO */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-wider text-lime flex items-center gap-1.5">
-                  <Package className="w-4 h-4" />
-                  1. Facturación & Envío (DIAN)
-                </h3>
-
-                <div>
-                  <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                    Nombre Completo o Razón Social *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                    placeholder="Ej. Carlos Rodríguez"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                    Correo Electrónico *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                    placeholder="carlos@ejemplo.com"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                      Tipo Doc. *
-                    </label>
-                    <select
-                      value={docType}
-                      onChange={(e) => setDocType(e.target.value as DocumentType)}
-                      className="w-full bg-dark-950 border border-dark-700 rounded px-2 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                    >
-                      <option value="CC">CC</option>
-                      <option value="NIT">NIT</option>
-                      <option value="CE">CE</option>
-                      <option value="PASAPORTE">Pasaporte</option>
-                      <option value="RUT">RUT</option>
-                    </select>
+              {/* LEFT COLUMN: DIAN & SHIPPING INFO + PAYMENT METHODS */}
+              <div className="lg:col-span-7 space-y-8">
+                
+                {/* STEP 1: FACTURACIÓN & ENVÍO (DIAN) */}
+                <section aria-labelledby="shipping-heading" className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                    <div className="w-8 h-8 rounded-full bg-black text-white font-black text-xs flex items-center justify-center">
+                      1
+                    </div>
+                    <div>
+                      <h2 id="shipping-heading" className="text-base sm:text-lg font-black uppercase tracking-tight text-black flex items-center gap-2">
+                        <Package className="w-4 h-4 text-black" />
+                        Facturación & Envío (DIAN Colombia)
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Ingresa los datos para la guía de transporte y tu factura electrónica oficial.
+                      </p>
+                    </div>
                   </div>
-                  <div className="col-span-2">
-                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                      Número de Documento / NIT *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={docNumber}
-                      onChange={(e) => setDocNumber(e.target.value)}
-                      className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                      placeholder="1020304050"
-                    />
+
+                  {/* Form fields */}
+                  <div className="space-y-4 text-xs">
+                    <div>
+                      <label className="block text-gray-700 font-bold mb-1.5">
+                        Nombre Completo o Razón Social *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                        placeholder="Ej. Carlos Rodríguez"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-700 font-bold mb-1.5">
+                        Correo Electrónico * (Para confirmación y factura)
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                        placeholder="carlos@ejemplo.com"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-gray-700 font-bold mb-1.5">
+                          Tipo Doc. *
+                        </label>
+                        <select
+                          value={docType}
+                          onChange={(e) => setDocType(e.target.value as DocumentType)}
+                          className="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-3 text-sm text-black focus:bg-white focus:outline-none focus:border-black transition-colors font-medium"
+                        >
+                          <option value="CC">CC (Cédula de Ciudadanía)</option>
+                          <option value="NIT">NIT (Empresas)</option>
+                          <option value="CE">CE (Cédula Extranjería)</option>
+                          <option value="PASAPORTE">Pasaporte</option>
+                          <option value="RUT">RUT</option>
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-gray-700 font-bold mb-1.5">
+                          Número de Documento / NIT *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={docNumber}
+                          onChange={(e) => setDocNumber(e.target.value)}
+                          className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                          placeholder="1020304050"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-gray-700 font-bold mb-1.5">
+                          Ciudad / Municipio *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                          placeholder="Bogotá, Medellín, Cali, etc."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-700 font-bold mb-1.5">
+                          Teléfono Móvil (WhatsApp) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                          placeholder="+57 300 123 4567"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-700 font-bold mb-1.5">
+                        Dirección Completa de Entrega *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-black transition-colors"
+                        placeholder="Calle, Carrera, Manzana, Edificio, Apto..."
+                      />
+                    </div>
                   </div>
-                </div>
+                </section>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                      Ciudad *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                      placeholder="Bogotá, Medellín, etc."
-                    />
+                {/* STEP 2: MÉTODO DE PAGO */}
+                <section aria-labelledby="payment-heading" className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                    <div className="w-8 h-8 rounded-full bg-black text-white font-black text-xs flex items-center justify-center">
+                      2
+                    </div>
+                    <div>
+                      <h2 id="payment-heading" className="text-base sm:text-lg font-black uppercase tracking-tight text-black flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-black" />
+                        Método de Pago Seguro
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Selecciona cómo deseas realizar tu abono o pago oficial.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                      Teléfono Móvil
-                    </label>
-                    <input
-                      type="text"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                      placeholder="+57 300..."
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-[11px] text-gray-400 font-semibold mb-1">
-                    Dirección de Entrega *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-lime"
-                    placeholder="Calle, Carrera, Edificio, Apto..."
-                  />
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: PAYMENT METHOD & SUMMARY */}
-              <div className="space-y-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-lime flex items-center gap-1.5 mb-3">
-                    <CreditCard className="w-4 h-4" />
-                    2. Método de Pago
-                  </h3>
-
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {[
-                      { id: 'pse', label: 'PSE / Transferencia En Línea', icon: Smartphone },
-                      { id: 'wompi', label: 'Wompi / Tarjeta Débito / Crédito', icon: CreditCard },
-                      { id: 'transfer', label: 'Bancolombia Transferencia Directa', icon: Building },
-                      { id: 'paypal', label: 'PayPal (USD)', icon: CreditCard },
+                      {
+                        id: 'pse',
+                        label: 'PSE / Transferencia En Línea',
+                        sub: 'Débito desde cualquier cuenta de ahorro o corriente en Colombia (Bancolombia, Nequi, Davivienda, etc.)',
+                        icon: Smartphone,
+                      },
+                      {
+                        id: 'wompi',
+                        label: 'Wompi / Tarjeta Débito y Crédito',
+                        sub: 'Visa, Mastercard, American Express — Pago procesado con seguridad Bancolombia Wompi',
+                        icon: CreditCard,
+                      },
+                      {
+                        id: 'transfer',
+                        label: 'Bancolombia Transferencia Directa / QR',
+                        sub: 'Transferencia bancaria directa con confirmación vía comprobante WhatsApp',
+                        icon: Building,
+                      },
+                      {
+                        id: 'paypal',
+                        label: 'PayPal (Pagos Internacionales en USD)',
+                        sub: 'Para compras fuera de Colombia con protección al comprador',
+                        icon: CreditCard,
+                      },
                     ].map((m) => {
                       const Icon = m.icon;
+                      const isSelected = paymentMethod === m.id;
                       return (
                         <label
                           key={m.id}
-                          className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                            paymentMethod === m.id
-                              ? 'bg-lime/10 border-lime text-white'
-                              : 'bg-dark-950 border-dark-800 text-gray-300 hover:border-dark-700'
+                          className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-gray-50 border-black shadow-sm'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-400'
                           }`}
                         >
                           <input
                             type="radio"
                             name="paymentMethod"
-                            checked={paymentMethod === m.id}
+                            checked={isSelected}
                             onChange={() => setPaymentMethod(m.id as PaymentMethod)}
-                            className="text-lime focus:ring-lime"
+                            className="mt-1 text-black focus:ring-black accent-black w-4 h-4"
                           />
-                          <Icon className="w-4 h-4 text-lime" />
-                          <span className="text-xs font-semibold">{m.label}</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4 text-black" />
+                              <span className="text-sm font-extrabold text-black">{m.label}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">{m.sub}</p>
+                          </div>
                         </label>
                       );
                     })}
                   </div>
-                </div>
+                </section>
 
-                {/* Summary Box */}
-                <div className="bg-dark-950 border border-dark-800 rounded-lg p-4 space-y-2 text-xs">
-                  <div className="flex justify-between text-gray-400">
-                    <span>Artículos ({items.length}):</span>
-                    <span className="text-white font-medium">{formatCurrency(subtotal)}</span>
-                  </div>
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-lime font-bold">
-                      <span>Cupón ({coupon?.code}):</span>
-                      <span>-{formatCurrency(discountAmount)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-gray-400">
-                    <span>Envío:</span>
-                    <span className="text-white font-medium">
-                      {freeShipping ? 'GRATIS ($0)' : formatCurrency(shippingCost)}
+              </div>
+
+              {/* RIGHT COLUMN: STICKY ORDER SUMMARY (RESUMEN DEL PEDIDO) */}
+              <div className="lg:col-span-5">
+                <div className="bg-[#f8f9fa] border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm sticky top-24 space-y-6">
+                  
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                    <h3 className="text-base font-black uppercase tracking-tight text-black">
+                      Resumen del Pedido
+                    </h3>
+                    <span className="text-xs font-bold text-gray-500">
+                      {items.length} {items.length === 1 ? 'producto' : 'productos'}
                     </span>
                   </div>
-                  <div className="flex justify-between pt-2 border-t border-dark-800 text-sm font-black text-white">
-                    <span>TOTAL A PAGAR:</span>
-                    <span className="text-lime text-base">{formatCurrency(finalTotal)}</span>
-                  </div>
-                </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-lime hover:bg-lime-bright text-black font-black py-3.5 px-4 rounded text-xs uppercase tracking-wider transition-all transform hover:-translate-y-0.5 shadow-lg shadow-lime/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>
-                    {isLoading ? 'PROCESANDO PAGO CON SEGURO...' : `PAGAR ${formatCurrency(finalTotal)}`}
-                  </span>
-                </button>
+                  {/* Items List */}
+                  <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-gray-200/60">
+                    {items.map((item) => (
+                      <div key={item.product.id} className="pt-3 first:pt-0 flex items-center gap-3">
+                        <div className="w-14 h-14 bg-white border border-gray-200 rounded-xl p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                          <img
+                            src={item.product.images?.[0] || '/mpp-brake-disc.png'}
+                            alt={item.product.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-extrabold text-black uppercase truncate">
+                            {item.product.name}
+                          </h4>
+                          <span className="text-[11px] text-gray-500">
+                            Cant: {item.quantity} × {formatCurrency(item.product.discount_price ?? item.product.price)}
+                          </span>
+                        </div>
+                        <span className="text-xs font-black text-black shrink-0">
+                          {formatCurrency((item.product.discount_price ?? item.product.price) * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Financial Breakdown */}
+                  <div className="space-y-2.5 pt-4 border-t border-gray-200 text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal:</span>
+                      <span className="font-bold text-gray-900">{formatCurrency(subtotal)}</span>
+                    </div>
+
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded">
+                        <span>Cupón ({coupon?.code}):</span>
+                        <span>-{formatCurrency(discountAmount)}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between text-gray-600">
+                      <span>Envío a Nivel Nacional:</span>
+                      <span className="font-bold text-gray-900">
+                        {freeShipping ? (
+                          <span className="text-emerald-700 font-extrabold uppercase">GRATIS ($0)</span>
+                        ) : (
+                          formatCurrency(shippingCost)
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between pt-3 border-t border-gray-200 text-lg font-black text-black">
+                      <span>TOTAL A PAGAR:</span>
+                      <span>{formatCurrency(finalTotal)}</span>
+                    </div>
+                  </div>
+
+                  {/* Primary Black CTA Button (Identical to Single Product design!) */}
+                  <button
+                    type="submit"
+                    disabled={isLoading || items.length === 0}
+                    className="w-full bg-black hover:bg-neutral-800 text-white font-black py-4 px-6 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2.5 disabled:opacity-50"
+                  >
+                    <ShieldCheck className="w-5 h-5" />
+                    <span>
+                      {isLoading
+                        ? 'PROCESANDO PAGO CON SEGURO...'
+                        : `PAGAR ${formatCurrency(finalTotal)}`}
+                    </span>
+                  </button>
+
+                  {/* Trust guarantees */}
+                  <div className="space-y-2 pt-2 border-t border-gray-200/80 text-[11px] text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-black shrink-0" />
+                      <span>Despacho prioritario con guía de rastreo nacional.</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-black shrink-0" />
+                      <span>Emisión de Factura Electrónica conforme a requisitos DIAN.</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-black shrink-0" />
+                      <span>Garantía de compra protegida y encriptación de datos.</span>
+                    </div>
+                  </div>
+
+                </div>
               </div>
 
             </div>
           </form>
         )}
-
-      </div>
+      </main>
     </div>
   );
 };
