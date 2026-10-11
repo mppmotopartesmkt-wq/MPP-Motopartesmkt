@@ -238,6 +238,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onSelectProduct={(p) => setSelectedProduct(p)}
+        onProceedToCheckout={() => setIsCheckoutOpen(true)}
         allProducts={products}
       />
 

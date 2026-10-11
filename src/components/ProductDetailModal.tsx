@@ -17,6 +17,7 @@ import {
   Layers,
   Wrench,
   Award,
+  ArrowRight,
 } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
@@ -26,6 +27,7 @@ interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
   onSelectProduct?: (product: Product) => void;
+  onProceedToCheckout?: () => void;
   allProducts?: Product[];
 }
 
@@ -33,9 +35,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   onClose,
   onSelectProduct,
+  onProceedToCheckout,
   allProducts = [],
 }) => {
-  const { addToCart, toggleWishlist, isWishlisted, setIsCartOpen } = useCart();
+  const { addToCart, toggleWishlist, isWishlisted, setIsCartOpen, totalItems } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -81,8 +84,18 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     setAdded(true);
     setTimeout(() => {
       setAdded(false);
+    }, 1500);
+    // Open Cart Drawer immediately on top so user can review and proceed to checkout
+    setIsCartOpen(true);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity);
+    if (onProceedToCheckout) {
+      onProceedToCheckout();
+    } else {
       setIsCartOpen(true);
-    }, 900);
+    }
   };
 
   const handleShare = () => {
@@ -166,6 +179,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               aria-label="Guardar en favoritos"
             >
               <Heart className={`w-4 h-4 ${wishlisted ? 'fill-lime text-lime' : ''}`} />
+            </button>
+
+            {/* Cart drawer toggle */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="p-2.5 rounded-full text-gray-700 hover:text-black hover:bg-gray-100 transition-colors relative"
+              title="Abrir Carrito de Compras"
+              aria-label="Abrir carrito"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-lime text-black font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                  {totalItems}
+                </span>
+              )}
             </button>
 
             <button
@@ -406,6 +434,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <Heart className={`w-5 h-5 ${wishlisted ? 'fill-lime text-lime' : ''}`} />
                 </button>
               </div>
+
+              {/* Instant Direct Checkout Button */}
+              <button
+                onClick={handleBuyNow}
+                disabled={product.stock_qty <= 0}
+                className="w-full h-12 bg-lime hover:bg-lime-bright text-black font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-lime/20 active:scale-[0.99]"
+              >
+                <span>COMPRAR AHORA (CHECKOUT DIRECTO)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
               {/* Instant purchase hint */}
               <p className="text-[11px] text-gray-500 text-center">

@@ -37,7 +37,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onN
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-dark-900 border border-dark-800 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl text-gray-100">
         
         {/* Header */}

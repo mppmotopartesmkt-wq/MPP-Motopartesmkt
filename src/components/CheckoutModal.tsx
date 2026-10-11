@@ -93,7 +93,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-dark-900 border border-dark-800 rounded-xl w-full max-w-3xl overflow-hidden shadow-2xl text-gray-100 my-8">
         
         {/* Header */}
