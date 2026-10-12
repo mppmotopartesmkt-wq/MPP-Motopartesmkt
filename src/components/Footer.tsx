@@ -25,9 +25,9 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
           <div className="lg:col-span-1 space-y-4">
             <div className="flex items-center">
               <img
-                src="/mpp-logo.jpg"
+                src="/mpp-logo.png"
                 alt="MPP Repuestos para Motos"
-                className="h-14 sm:h-16 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(132,204,22,0.3)]"
+                className="h-14 sm:h-16 w-auto object-contain"
               />
             </div>
 

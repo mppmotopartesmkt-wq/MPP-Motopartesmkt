@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-dark-900 border-b border-dark-800 transition-colors">
+    <header className="sticky top-0 z-40 bg-black border-b border-neutral-900 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -42,9 +42,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => onSelectCategory('All')}
           >
             <img
-              src="/mpp-logo.jpg"
+              src="/mpp-logo.png"
               alt="MPP Repuestos para Motos"
-              className="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow-[0_0_12px_rgba(132,204,22,0.35)]"
+              className="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </div>
 

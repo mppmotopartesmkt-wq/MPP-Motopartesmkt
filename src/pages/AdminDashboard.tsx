@@ -165,9 +165,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           
           <div className="flex items-center gap-4">
             <img
-              src="/mpp-logo.jpg"
+              src="/mpp-logo.png"
               alt="MPP"
-              className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(132,204,22,0.4)]"
+              className="h-10 sm:h-12 w-auto object-contain"
             />
             <div>
               <div className="flex items-center gap-2">

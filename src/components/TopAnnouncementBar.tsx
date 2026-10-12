@@ -3,7 +3,7 @@ import { Truck, Tag, RotateCcw } from 'lucide-react';
 
 export const TopAnnouncementBar: React.FC = () => {
   return (
-    <div className="bg-dark-950 text-gray-300 text-xs py-2 px-4 border-b border-dark-800">
+    <div className="bg-black text-gray-300 text-xs py-2 px-4 border-b border-neutral-900">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div className="flex items-center gap-2">
           <Truck className="w-3.5 h-3.5 text-lime" />

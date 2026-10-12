@@ -156,11 +156,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           </div>
 
           {/* Center: Branding */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2.5">
             <img
-              src="/mpp-logo.jpg"
+              src="/mpp-logo.png"
               alt="MPP"
-              className="w-8 h-8 rounded-lg object-contain bg-black border border-gray-200 p-0.5"
+              className="h-8 w-auto object-contain"
             />
             <span className="text-xs font-black uppercase tracking-wider text-black">
               MPP MOTOPARTES • CHECKOUT SEGURO
