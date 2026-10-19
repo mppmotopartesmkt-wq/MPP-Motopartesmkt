@@ -15,6 +15,9 @@ import {
   Copy,
   Check,
   RefreshCw,
+  Video,
+  Play,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Product } from '../types';
 import {
@@ -23,7 +26,8 @@ import {
   updateOrderStatus,
   saveProduct,
   deleteProduct,
-  uploadProductImage,
+  uploadProductMedia,
+  UploadMediaResult,
 } from '../services/api';
 import { formatCurrency } from '../utils/format';
 
@@ -44,10 +48,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   // Modal for new/edit product
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
+  const [modalUploading, setModalUploading] = useState<'photo' | 'video' | null>(null);
+  const [newPhotoUrl, setNewPhotoUrl] = useState('');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
 
   // Storage upload state
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedMedia, setUploadedMedia] = useState<UploadMediaResult | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   // New coupon state
@@ -114,10 +121,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           .replace(/(^-|-$)+/g, ''),
       stock_qty: Number(editingProduct.stock_qty || 0),
       price: Number(editingProduct.price || 0),
+      discount_price: editingProduct.discount_price ? Number(editingProduct.discount_price) : null,
+      wholesale_price: editingProduct.wholesale_price ? Number(editingProduct.wholesale_price) : null,
       is_active: editingProduct.is_active !== false,
+      status_text: editingProduct.status_text || 'Disponible',
       images: editingProduct.images && editingProduct.images.length > 0
         ? editingProduct.images
         : ['/mpp-brake-disc.png'],
+      videos: editingProduct.videos || [],
     };
 
     const res = await saveProduct(payload);
@@ -136,23 +147,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
     }
   };
 
-  // Handle Image Upload to Supabase Storage
+  // Handle Media (Photo / Video) Upload to Supabase Storage in Storage Tab
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingFile(true);
-    setUploadedImageUrl(null);
+    setUploadedMedia(null);
 
-    const publicUrl = await uploadProductImage(file);
+    const result = await uploadProductMedia(file);
     setUploadingFile(false);
 
-    if (publicUrl) {
-      setUploadedImageUrl(publicUrl);
-    } else {
-      // Fallback object URL for preview
-      const localUrl = URL.createObjectURL(file);
-      setUploadedImageUrl(localUrl);
+    if (result) {
+      setUploadedMedia(result);
+    }
+  };
+
+  // Handle Direct Photo Upload inside Product Modal
+  const handleModalPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setModalUploading('photo');
+    const result = await uploadProductMedia(file);
+    setModalUploading(null);
+
+    if (result && editingProduct) {
+      const currentImages = editingProduct.images || [];
+      setEditingProduct({
+        ...editingProduct,
+        images: [...currentImages, result.url],
+      });
+    }
+  };
+
+  // Handle Direct Video Upload inside Product Modal
+  const handleModalVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setModalUploading('video');
+    const result = await uploadProductMedia(file);
+    setModalUploading(null);
+
+    if (result && editingProduct) {
+      const currentVideos = editingProduct.videos || [];
+      setEditingProduct({
+        ...editingProduct,
+        videos: [...currentVideos, result.url],
+      });
     }
   };
 
@@ -340,14 +383,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     className="bg-dark-950 border border-dark-700 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-lime"
                   >
                     <option value="All">Todas las categorías</option>
-                    <option value="Helmets">Cascos</option>
-                    <option value="Riding Gear">Equipación</option>
-                    <option value="Gloves">Guantes</option>
-                    <option value="Exhaust">Escapes</option>
-                    <option value="Tires">Llantas</option>
-                    <option value="Accessories">Accesorios</option>
-                    <option value="Batteries">Baterías</option>
-                    <option value="Maintenance">Mantenimiento</option>
+                    <option value="Tanques">Tanques</option>
+                    <option value="Farolas">Farolas</option>
+                    <option value="Defensas">Defensas</option>
+                    <option value="Espejos">Espejos</option>
+                    <option value="Carenajes">Carenajes</option>
+                    <option value="Frenos">Frenos</option>
+                    <option value="Accesorios">Accesorios</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
                   </select>
                 </div>
               </div>
@@ -357,11 +400,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   setEditingProduct({
                     sku: `MPP-${Date.now().toString().slice(-4)}`,
                     name: '',
-                    price: 250000,
-                    stock_qty: 30,
-                    category: 'Accessories',
+                    price: 150000,
+                    wholesale_price: 120000,
+                    stock_qty: 20,
+                    category: 'Tanques',
                     brand: 'MPP',
+                    status_text: 'Disponible',
                     images: ['/mpp-brake-disc.png'],
+                    videos: [],
                     is_active: true,
                   });
                   setIsProductModalOpen(true);
@@ -675,58 +721,79 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: SUPABASE STORAGE UPLOADER */}
+        {/* TAB 4: SUPABASE STORAGE UPLOADER (FOTOS Y VIDEOS) */}
         {/* ========================================================================= */}
         {activeTab === 'storage' && (
           <div className="space-y-6">
             <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 max-w-2xl">
               <h3 className="text-sm font-black uppercase tracking-wider text-lime mb-2 flex items-center gap-2">
-                <Upload className="w-4 h-4" /> Subida Directa a Supabase Storage Bucket ("products")
+                <Upload className="w-4 h-4" /> Subida Directa a Supabase Storage ("products")
               </h3>
               <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-                Selecciona una imagen de producto desde tu computador. Se almacenará en el bucket público de tu proyecto de Supabase y te generará la URL lista para asignar al producto.
+                Selecciona una foto o video de producto desde tu computador. Se subirá al bucket público <code className="text-lime bg-dark-950 px-1 py-0.5 rounded">products/images/</code> o <code className="text-lime bg-dark-950 px-1 py-0.5 rounded">products/videos/</code> de Supabase y te generará la URL directa lista para asociar al producto.
               </p>
 
               <div className="border-2 border-dashed border-dark-700 hover:border-lime rounded-xl p-8 text-center bg-dark-950/60 transition-colors">
-                <Upload className="w-10 h-10 text-gray-500 mx-auto mb-3" />
+                <div className="flex justify-center items-center gap-3 mb-3 text-gray-500">
+                  <ImageIcon className="w-8 h-8" />
+                  <span className="text-xl font-light">/</span>
+                  <Video className="w-8 h-8" />
+                </div>
                 <label className="cursor-pointer">
                   <span className="bg-lime hover:bg-lime-bright text-black font-black text-xs uppercase px-5 py-2.5 rounded-lg inline-block transition-all shadow-md shadow-lime/20 mb-2">
-                    {uploadingFile ? 'Subiendo imagen...' : 'Seleccionar Archivo de Foto'}
+                    {uploadingFile ? 'Subiendo archivo multimedia...' : 'Seleccionar Foto o Video'}
                   </span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
                 </label>
                 <p className="text-[11px] text-gray-500 mt-2">
-                  Formatos soportados: JPG, PNG, WEBP
+                  Formatos soportados: JPG, PNG, WEBP, MP4, WEBM, MOV (hasta 50MB)
                 </p>
               </div>
 
               {/* Upload Result */}
-              {uploadedImageUrl && (
+              {uploadedMedia && (
                 <div className="mt-6 p-4 rounded-xl bg-dark-950 border border-lime/40 space-y-3">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={uploadedImageUrl}
-                      alt="Uploaded preview"
-                      className="w-16 h-16 object-cover rounded-lg bg-white p-1"
-                    />
+                    {uploadedMedia.type === 'video' ? (
+                      <div className="w-20 h-20 bg-black rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-dark-700">
+                        <video
+                          src={uploadedMedia.url}
+                          className="w-full h-full object-cover"
+                          controls
+                        />
+                      </div>
+                    ) : (
+                      <img
+                        src={uploadedMedia.url}
+                        alt="Uploaded preview"
+                        className="w-20 h-20 object-cover rounded-lg bg-white p-1 shrink-0"
+                      />
+                    )}
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-lime block">
-                        ¡Imagen subida exitosamente a Supabase Storage!
-                      </span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-lime block">
+                          ¡Archivo subido exitosamente a Supabase Storage!
+                        </span>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                          uploadedMedia.type === 'video' ? 'bg-purple-500/20 text-purple-300' : 'bg-lime/20 text-lime'
+                        }`}>
+                          {uploadedMedia.type === 'video' ? 'VIDEO' : 'FOTO'}
+                        </span>
+                      </div>
                       <p className="text-[11px] text-gray-400 truncate">
-                        {uploadedImageUrl}
+                        {uploadedMedia.url}
                       </p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(uploadedImageUrl);
+                      navigator.clipboard.writeText(uploadedMedia.url);
                       setCopiedUrl(true);
                       setTimeout(() => setCopiedUrl(false), 2000);
                     }}
@@ -740,7 +807,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar URL para Producto</span>
+                        <span>Copiar URL para el Producto</span>
                       </>
                     )}
                   </button>
@@ -773,8 +840,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
 
             <form onSubmit={handleSaveProductSubmit} className="p-6 space-y-4 text-xs">
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block text-gray-400 font-semibold mb-1">
                     Nombre del Producto *
                   </label>
@@ -801,10 +868,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-gray-400 font-semibold mb-1">
-                    Precio (COP) *
+                    Precio Normal (COP) *
                   </label>
                   <input
                     type="number"
@@ -817,7 +884,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
 
                 <div>
                   <label className="block text-gray-400 font-semibold mb-1">
-                    Existencias (Stock) *
+                    Precio Por Mayor (COP)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct?.wholesale_price || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, wholesale_price: Number(e.target.value) || null })}
+                    placeholder="Mayorista"
+                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-lime focus:outline-none focus:border-lime font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 font-semibold mb-1">
+                    Precio Oferta (COP)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct?.discount_price || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, discount_price: Number(e.target.value) || null })}
+                    placeholder="Opcional"
+                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 font-semibold mb-1">
+                    Stock (Unid) *
                   </label>
                   <input
                     type="number"
@@ -827,40 +920,205 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-gray-400 font-semibold mb-1">
                     Categoría *
                   </label>
                   <select
-                    value={editingProduct?.category || 'Helmets'}
+                    value={editingProduct?.category || 'Tanques'}
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
                     className="w-full bg-dark-950 border border-dark-700 rounded px-2.5 py-2 text-white focus:outline-none focus:border-lime"
                   >
-                    <option value="Helmets">Cascos</option>
-                    <option value="Riding Gear">Equipación</option>
-                    <option value="Gloves">Guantes</option>
-                    <option value="Exhaust">Escapes</option>
-                    <option value="Tires">Llantas</option>
-                    <option value="Accessories">Accesorios</option>
-                    <option value="Batteries">Baterías</option>
-                    <option value="Maintenance">Mantenimiento</option>
+                    <option value="Tanques">Tanques</option>
+                    <option value="Farolas">Farolas</option>
+                    <option value="Defensas">Defensas</option>
+                    <option value="Espejos">Espejos</option>
+                    <option value="Carenajes">Carenajes</option>
+                    <option value="Frenos">Frenos</option>
+                    <option value="Accesorios">Accesorios</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 font-semibold mb-1">
+                    Marca / Fabricante
+                  </label>
+                  <input
+                    type="text"
+                    value={editingProduct?.brand || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, brand: e.target.value })}
+                    placeholder="Duvox, Growsun, MPP..."
+                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 font-semibold mb-1">
+                    Estado en Tienda
+                  </label>
+                  <select
+                    value={editingProduct?.status_text || 'Disponible'}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, status_text: e.target.value })}
+                    className="w-full bg-dark-950 border border-dark-700 rounded px-2.5 py-2 text-white focus:outline-none focus:border-lime"
+                  >
+                    <option value="Disponible">Disponible</option>
+                    <option value="Por agotarse">Por agotarse</option>
+                    <option value="Bajo pedido">Bajo pedido</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-gray-400 font-semibold mb-1">
-                  URL de Imagen (Supabase Storage o Web) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="https://..."
-                  value={editingProduct?.images?.[0] || ''}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, images: [e.target.value] })}
-                  className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
-                />
+              {/* SECCIÓN 1: FOTOS DEL PRODUCTO (SUPABASE STORAGE) */}
+              <div className="p-3 bg-dark-950 rounded-lg border border-dark-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-200 font-bold flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-lime" /> Fotografías del Producto (Supabase Storage)
+                  </span>
+
+                  <label className="cursor-pointer bg-lime hover:bg-lime-bright text-black font-extrabold text-[11px] uppercase px-3 py-1.5 rounded transition-all flex items-center gap-1.5 shadow-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{modalUploading === 'photo' ? 'Subiendo...' : 'Subir Foto'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleModalPhotoUpload}
+                      className="hidden"
+                      disabled={modalUploading !== null}
+                    />
+                  </label>
+                </div>
+
+                {/* Input manual URL foto */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="O pegar URL de imagen (https://...)"
+                    value={newPhotoUrl}
+                    onChange={(e) => setNewPhotoUrl(e.target.value)}
+                    className="flex-1 bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-lime"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newPhotoUrl.trim()) return;
+                      const currentImages = editingProduct?.images || [];
+                      setEditingProduct({
+                        ...editingProduct,
+                        images: [...currentImages, newPhotoUrl.trim()],
+                      });
+                      setNewPhotoUrl('');
+                    }}
+                    className="bg-dark-800 hover:bg-dark-700 text-white px-3 py-1.5 rounded font-bold text-xs transition-colors"
+                  >
+                    Añadir
+                  </button>
+                </div>
+
+                {/* Lista de fotos adjuntas */}
+                <div className="flex flex-wrap gap-2.5 pt-1">
+                  {(editingProduct?.images || []).map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group w-16 h-16 bg-white rounded-lg p-1 border border-dark-700 overflow-hidden flex items-center justify-center"
+                    >
+                      <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (editingProduct?.images || []).filter((_, i) => i !== idx);
+                          setEditingProduct({ ...editingProduct, images: updated });
+                        }}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] opacity-90 group-hover:opacity-100 transition-opacity"
+                        title="Eliminar foto"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {(!editingProduct?.images || editingProduct.images.length === 0) && (
+                    <span className="text-[11px] text-gray-500 italic">No hay fotos asignadas aún</span>
+                  )}
+                </div>
+              </div>
+
+              {/* SECCIÓN 2: VIDEOS DEL PRODUCTO (SUPABASE STORAGE) */}
+              <div className="p-3 bg-dark-950 rounded-lg border border-dark-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-200 font-bold flex items-center gap-2">
+                    <Video className="w-4 h-4 text-purple-400" /> Videos del Producto (Supabase Storage)
+                  </span>
+
+                  <label className="cursor-pointer bg-purple-500 hover:bg-purple-400 text-white font-extrabold text-[11px] uppercase px-3 py-1.5 rounded transition-all flex items-center gap-1.5 shadow-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{modalUploading === 'video' ? 'Subiendo...' : 'Subir Video'}</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleModalVideoUpload}
+                      className="hidden"
+                      disabled={modalUploading !== null}
+                    />
+                  </label>
+                </div>
+
+                {/* Input manual URL video */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="O pegar URL de video (https://... mp4, webm o link directo)"
+                    value={newVideoUrl}
+                    onChange={(e) => setNewVideoUrl(e.target.value)}
+                    className="flex-1 bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-lime"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newVideoUrl.trim()) return;
+                      const currentVideos = editingProduct?.videos || [];
+                      setEditingProduct({
+                        ...editingProduct,
+                        videos: [...currentVideos, newVideoUrl.trim()],
+                      });
+                      setNewVideoUrl('');
+                    }}
+                    className="bg-dark-800 hover:bg-dark-700 text-white px-3 py-1.5 rounded font-bold text-xs transition-colors"
+                  >
+                    Añadir
+                  </button>
+                </div>
+
+                {/* Lista de videos adjuntos */}
+                <div className="flex flex-wrap gap-2.5 pt-1">
+                  {(editingProduct?.videos || []).map((videoUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group w-24 h-16 bg-black rounded-lg border border-purple-500/40 overflow-hidden flex items-center justify-center"
+                    >
+                      <video src={videoUrl} className="w-full h-full object-cover opacity-80" />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <Play className="w-4 h-4 text-white fill-white/80" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (editingProduct?.videos || []).filter((_, i) => i !== idx);
+                          setEditingProduct({ ...editingProduct, videos: updated });
+                        }}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] opacity-90 group-hover:opacity-100 transition-opacity z-10"
+                        title="Eliminar video"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {(!editingProduct?.videos || editingProduct.videos.length === 0) && (
+                    <span className="text-[11px] text-gray-500 italic">No hay videos asignados aún (opcional)</span>
+                  )}
+                </div>
               </div>
 
               <div>

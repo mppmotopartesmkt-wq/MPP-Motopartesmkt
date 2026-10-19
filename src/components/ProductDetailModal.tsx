@@ -18,6 +18,8 @@ import {
   Wrench,
   Award,
   ArrowRight,
+  Play,
+  Film,
 } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
@@ -106,12 +108,34 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   };
 
-  // Thumbnail list: guarantee at least 4 visual views matching the reference layout
-  const primaryImage = product.images?.[0] || '/mpp-brake-disc.png';
-  const galleryImages =
-    product.images && product.images.length > 1
-      ? product.images
-      : [primaryImage, primaryImage, primaryImage, primaryImage];
+  // Unified media gallery supporting photos and videos
+  interface MediaItem {
+    type: 'image' | 'video';
+    url: string;
+  }
+
+  const mediaList: MediaItem[] = [];
+  if (product.images && product.images.length > 0) {
+    product.images.forEach((img) => {
+      if (img) mediaList.push({ type: 'image', url: img });
+    });
+  } else {
+    mediaList.push({ type: 'image', url: '/mpp-brake-disc.png' });
+  }
+
+  if (product.videos && product.videos.length > 0) {
+    product.videos.forEach((vid) => {
+      if (vid) mediaList.push({ type: 'video', url: vid });
+    });
+  }
+
+  // Guarantee at least 4 visual views for aesthetics if single photo and no videos
+  const galleryItems: MediaItem[] =
+    mediaList.length === 1 && mediaList[0].type === 'image'
+      ? [mediaList[0], mediaList[0], mediaList[0], mediaList[0]]
+      : mediaList;
+
+  const currentMedia = galleryItems[selectedImage] || galleryItems[0] || { type: 'image', url: '/mpp-brake-disc.png' };
 
   // Related products (exclude current product)
   const relatedProducts = allProducts
@@ -216,24 +240,36 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* LEFT COLUMN: THUMBNAILS + LARGE HERO IMAGE SHOWCASE */}
           <section aria-label="Galería del repuesto" className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-4 sm:gap-6">
             
-            {/* Vertical thumbnails list (as in Velora reference!) */}
+            {/* Vertical thumbnails list (Photos & Videos) */}
             <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible shrink-0 pb-2 sm:pb-0">
-              {galleryImages.map((img, idx) => (
+              {galleryItems.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 p-2 border-2 transition-all shrink-0 flex items-center justify-center overflow-hidden group ${
+                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 p-2 border-2 transition-all shrink-0 flex items-center justify-center overflow-hidden group relative ${
                     selectedImage === idx
                       ? 'border-black ring-1 ring-black shadow-sm'
                       : 'border-gray-200 hover:border-gray-400 opacity-80 hover:opacity-100'
                   }`}
                   aria-label={`Ver vista ${idx + 1} del producto`}
                 >
-                  <img
-                    src={img}
-                    alt={`Vista ${idx + 1}`}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                  />
+                  {item.type === 'video' ? (
+                    <div className="w-full h-full bg-black rounded flex items-center justify-center relative overflow-hidden">
+                      <video src={item.url} className="w-full h-full object-cover opacity-60" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <Play className="w-5 h-5 text-white fill-white drop-shadow" />
+                      </div>
+                      <span className="absolute bottom-0 inset-x-0 bg-purple-700/90 text-[7px] sm:text-[8px] text-white font-extrabold uppercase text-center py-0.5">
+                        VIDEO
+                      </span>
+                    </div>
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`Vista ${idx + 1}`}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                    />
+                  )}
                 </button>
               ))}
 
@@ -242,52 +278,74 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Main prominent image display */}
+            {/* Main prominent display (Zoomable Image or HTML5 Video Player) */}
             <div className="flex-1">
-              <div
-                className={`relative w-full aspect-square bg-[#f8f9fa] rounded-2xl border border-gray-100 flex items-center justify-center p-8 sm:p-14 overflow-hidden shadow-sm transition-all duration-300 ${
-                  isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'
-                }`}
-                onClick={() => setIsZoomed(!isZoomed)}
-              >
-                {/* Floating badge inside image card */}
-                <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                  <span className="bg-white/90 backdrop-blur-sm text-black font-extrabold text-[10px] sm:text-xs uppercase px-3 py-1 rounded-full border border-gray-200 shadow-sm">
-                    {product.brand || 'MPP PERFORMANCE'}
-                  </span>
-                  {product.discount_price && (
-                    <span className="bg-black text-white font-extrabold text-[10px] sm:text-xs uppercase px-2.5 py-1 rounded-full shadow-sm">
-                      OFERTA
+              {currentMedia.type === 'video' ? (
+                <div className="relative w-full aspect-square bg-black rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                  <video
+                    key={currentMedia.url}
+                    src={currentMedia.url}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-contain max-h-[550px]"
+                  />
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                    <span className="bg-purple-600 text-white font-black text-[10px] sm:text-xs uppercase px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5" /> Video Demostración
                     </span>
-                  )}
+                  </div>
                 </div>
-
-                {/* Main Product Image with Zoom Effect */}
-                <img
-                  src={galleryImages[selectedImage] || primaryImage}
-                  alt={product.name}
-                  className={`w-full h-full object-contain filter drop-shadow-lg transition-transform duration-500 ease-out ${
-                    isZoomed ? 'scale-150' : 'hover:scale-105'
+              ) : (
+                <div
+                  className={`relative w-full aspect-square bg-[#f8f9fa] rounded-2xl border border-gray-100 flex items-center justify-center p-8 sm:p-14 overflow-hidden shadow-sm transition-all duration-300 ${
+                    isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'
                   }`}
-                />
-
-                {/* Bottom Right Zoom Icon */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsZoomed(!isZoomed);
-                  }}
-                  className="absolute bottom-4 right-4 z-10 w-10 h-10 rounded-full bg-white/95 border border-gray-200 shadow-md flex items-center justify-center text-gray-800 hover:text-black hover:scale-105 transition-all"
-                  title={isZoomed ? 'Reducir imagen' : 'Ampliar imagen'}
-                  aria-label={isZoomed ? 'Reducir imagen' : 'Ampliar imagen'}
+                  onClick={() => setIsZoomed(!isZoomed)}
                 >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-              </div>
+                  {/* Floating badge inside image card */}
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                    <span className="bg-white/90 backdrop-blur-sm text-black font-extrabold text-[10px] sm:text-xs uppercase px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                      {product.brand || 'MPP PERFORMANCE'}
+                    </span>
+                    {product.discount_price && (
+                      <span className="bg-black text-white font-extrabold text-[10px] sm:text-xs uppercase px-2.5 py-1 rounded-full shadow-sm">
+                        OFERTA
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Main Product Image with Zoom Effect */}
+                  <img
+                    src={currentMedia.url}
+                    alt={product.name}
+                    className={`w-full h-full object-contain filter drop-shadow-lg transition-transform duration-500 ease-out ${
+                      isZoomed ? 'scale-150' : 'hover:scale-105'
+                    }`}
+                  />
+
+                  {/* Bottom Right Zoom Icon */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsZoomed(!isZoomed);
+                    }}
+                    className="absolute bottom-4 right-4 z-10 w-10 h-10 rounded-full bg-white/95 border border-gray-200 shadow-md flex items-center justify-center text-gray-800 hover:text-black hover:scale-105 transition-all"
+                    title={isZoomed ? 'Reducir imagen' : 'Ampliar imagen'}
+                    aria-label={isZoomed ? 'Reducir imagen' : 'Ampliar imagen'}
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
 
               <p className="text-[11px] text-gray-400 text-center mt-2.5 flex items-center justify-center gap-1">
-                <span>Pasa el cursor o haz clic en la imagen para hacer zoom de alta resolución</span>
+                {currentMedia.type === 'video' ? (
+                  <span>Reproduciendo video demostrativo del producto</span>
+                ) : (
+                  <span>Pasa el cursor o haz clic en la imagen para hacer zoom de alta resolución</span>
+                )}
               </p>
             </div>
 
@@ -362,13 +420,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <span className="text-gray-500 font-medium">Categoría:</span>
                 <span className="font-bold text-black">{product.category || 'Repuestos'}</span>
               </div>
+              {product.wholesale_price && (
+                <div className="flex justify-between items-center bg-lime/20 px-2.5 py-1.5 rounded-lg border border-lime/30">
+                  <span className="text-gray-800 font-black">Precio Por Mayor:</span>
+                  <span className="font-extrabold text-black text-sm">{formatCurrency(product.wholesale_price)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center pt-1 border-t border-gray-200/60">
                 <span className="text-gray-500 font-medium">Disponibilidad:</span>
                 <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                  {product.stock_qty > 0
+                  {product.status_text || (product.stock_qty > 0
                     ? `En Stock (${product.stock_qty} unid. en bodega)`
-                    : 'Agotado temporalmente'}
+                    : 'Agotado temporalmente')}
                 </span>
               </div>
             </div>

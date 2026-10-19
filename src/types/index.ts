@@ -31,6 +31,9 @@ export interface Product {
   gross_weight_kg?: number | null;
   net_weight_kg?: number | null;
   images: string[];
+  videos?: string[];
+  wholesale_price?: number | null;
+  status_text?: string;
   is_active: boolean;
   category?: string;
   rating?: number;

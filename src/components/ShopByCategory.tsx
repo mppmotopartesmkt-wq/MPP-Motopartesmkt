@@ -13,44 +13,44 @@ interface ShopByCategoryProps {
 export const ShopByCategory: React.FC<ShopByCategoryProps> = ({ onSelectCategory }) => {
   const categories: CategoryItem[] = [
     {
-      name: 'CASCOS',
-      categoryKey: 'Helmets',
-      imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=300&q=80',
+      name: 'TANQUES',
+      categoryKey: 'Tanques',
+      imageUrl: '/mpp-brake-disc.png',
     },
     {
-      name: 'EQUIPACIÓN',
-      categoryKey: 'Riding Gear',
-      imageUrl: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=300&q=80',
+      name: 'FAROLAS',
+      categoryKey: 'Farolas',
+      imageUrl: '/mpp-brake-disc.png',
     },
     {
-      name: 'GUANTES',
-      categoryKey: 'Gloves',
-      imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=300&q=80',
+      name: 'DEFENSAS',
+      categoryKey: 'Defensas',
+      imageUrl: '/mpp-brake-disc.png',
     },
     {
-      name: 'ESCAPES',
-      categoryKey: 'Exhaust',
-      imageUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=300&q=80',
+      name: 'ESPEJOS',
+      categoryKey: 'Espejos',
+      imageUrl: '/mpp-brake-disc.png',
+    },
+    {
+      name: 'CARENAJES',
+      categoryKey: 'Carenajes',
+      imageUrl: '/mpp-brake-disc.png',
+    },
+    {
+      name: 'FRENOS',
+      categoryKey: 'Frenos',
+      imageUrl: '/mpp-brake-disc.png',
     },
     {
       name: 'ACCESORIOS',
-      categoryKey: 'Accessories',
-      imageUrl: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=300&q=80',
-    },
-    {
-      name: 'LLANTAS',
-      categoryKey: 'Tires',
-      imageUrl: 'https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=300&q=80',
-    },
-    {
-      name: 'BATERÍAS',
-      categoryKey: 'Batteries',
-      imageUrl: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&w=300&q=80',
+      categoryKey: 'Accesorios',
+      imageUrl: '/mpp-brake-disc.png',
     },
     {
       name: 'MANTENIMIENTO',
-      categoryKey: 'Maintenance',
-      imageUrl: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=300&q=80',
+      categoryKey: 'Mantenimiento',
+      imageUrl: '/mpp-brake-disc.png',
     },
   ];
 
