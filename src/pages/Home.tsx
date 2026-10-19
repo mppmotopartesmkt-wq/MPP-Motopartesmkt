@@ -36,12 +36,16 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
     fetchProducts().then((data) => setProducts(data));
   }, []);
 
+  const normalizeText = (text: string) =>
+    text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
   // Filter products by selected category or special "Sale"
   const filteredProducts = products.filter((p) => {
     if (selectedCategory === 'All') return true;
     if (selectedCategory === 'Sale') return !!p.discount_price;
     if (selectedCategory === 'Brands') return true;
-    return p.category?.toLowerCase() === selectedCategory.toLowerCase();
+    if (!p.category) return false;
+    return normalizeText(p.category) === normalizeText(selectedCategory);
   });
 
   // Best sellers: take top products
@@ -55,9 +59,20 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
   };
 
   const getCategoryTitle = (cat: string) => {
-    switch (cat.toLowerCase()) {
+    const norm = normalizeText(cat);
+    switch (norm) {
       case 'all':
         return 'EXPLORA NUESTRA COLECCIÓN COMPLETA';
+      case 'cascos':
+        return 'CASCOS CERTIFICADOS DE ALTA SEGURIDAD';
+      case 'accesorios':
+        return 'ACCESORIOS Y SOPORTES PARA MOTO';
+      case 'repuestos':
+        return 'REPUESTOS Y PARTES MECÁNICAS';
+      case 'llantas':
+        return 'LLANTAS Y NEUMÁTICOS DEPORTIVOS';
+      case 'baterias':
+        return 'BATERÍAS DE ALTO ARRANQUE (CCA)';
       case 'tanques':
         return 'TANQUES DE COMBUSTIBLE PARA MOTO';
       case 'farolas':
@@ -70,8 +85,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
         return 'CARENAJES, TAPAS Y CÚPULAS AERODINÁMICAS';
       case 'frenos':
         return 'DISCOS, PASTILLAS Y SISTEMAS DE FRENO';
-      case 'accesorios':
-        return 'ACCESORIOS Y SOPORTES PARA MOTO';
       case 'mantenimiento':
         return 'LUBRICANTES Y MANTENIMIENTO PREVENTIVO';
       case 'sale':
@@ -83,13 +96,17 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
 
   const categoryFilters = [
     { label: 'Todos', key: 'All' },
+    { label: 'Cascos', key: 'Cascos' },
+    { label: 'Accesorios', key: 'Accesorios' },
+    { label: 'Repuestos', key: 'Repuestos' },
+    { label: 'Llantas', key: 'Llantas' },
+    { label: 'Baterías', key: 'Baterías' },
     { label: 'Tanques', key: 'Tanques' },
     { label: 'Farolas', key: 'Farolas' },
     { label: 'Defensas', key: 'Defensas' },
     { label: 'Espejos', key: 'Espejos' },
     { label: 'Carenajes', key: 'Carenajes' },
     { label: 'Frenos', key: 'Frenos' },
-    { label: 'Accesorios', key: 'Accesorios' },
     { label: 'Ofertas', key: 'Sale' },
   ];
 

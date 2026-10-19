@@ -40,7 +40,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           <input
             type="text"
             autoFocus
-            placeholder="Buscar por tanque, farola, defensa, carenaje, SKU..."
+            placeholder="Buscar por cascos, llantas, baterías, repuestos, accesorios, SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none font-medium"

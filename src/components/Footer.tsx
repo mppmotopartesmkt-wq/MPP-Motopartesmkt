@@ -75,13 +75,15 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
             </h4>
             <ul className="space-y-2.5">
               {[
+                { name: 'Cascos Certificados', cat: 'Cascos' },
+                { name: 'Accesorios y Soportes', cat: 'Accesorios' },
+                { name: 'Repuestos y Partes', cat: 'Repuestos' },
+                { name: 'Llantas Deportivas', cat: 'Llantas' },
+                { name: 'Baterías de Alto CCA', cat: 'Baterías' },
                 { name: 'Tanques de Gasolina', cat: 'Tanques' },
                 { name: 'Farolas LED', cat: 'Farolas' },
                 { name: 'Defensas y Sliders', cat: 'Defensas' },
-                { name: 'Espejos Retrovisores', cat: 'Espejos' },
-                { name: 'Carenajes y Tapas', cat: 'Carenajes' },
                 { name: 'Frenos y Discos', cat: 'Frenos' },
-                { name: 'Accesorios y Soportes', cat: 'Accesorios' },
                 { name: 'Ofertas Especiales', cat: 'Sale' },
               ].map((item) => (
                 <li key={item.name}>

@@ -94,7 +94,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
+    const normalize = (s: string) =>
+      s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const matchesCat =
+      selectedCategory === 'All' ||
+      (p.category ? normalize(p.category) === normalize(selectedCategory) : false);
     return matchesSearch && matchesCat;
   });
 
@@ -383,13 +387,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium transition-all"
                   >
                     <option value="All">Todas las categorías</option>
+                    <option value="Cascos">Cascos</option>
+                    <option value="Accesorios">Accesorios</option>
+                    <option value="Repuestos">Repuestos</option>
+                    <option value="Llantas">Llantas</option>
+                    <option value="Baterías">Baterías</option>
                     <option value="Tanques">Tanques</option>
                     <option value="Farolas">Farolas</option>
                     <option value="Defensas">Defensas</option>
                     <option value="Espejos">Espejos</option>
                     <option value="Carenajes">Carenajes</option>
                     <option value="Frenos">Frenos</option>
-                    <option value="Accesorios">Accesorios</option>
                     <option value="Mantenimiento">Mantenimiento</option>
                   </select>
                 </div>
@@ -928,17 +936,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     Categoría *
                   </label>
                   <select
-                    value={editingProduct?.category || 'Tanques'}
+                    value={editingProduct?.category || 'Cascos'}
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   >
+                    <option value="Cascos">Cascos</option>
+                    <option value="Accesorios">Accesorios</option>
+                    <option value="Repuestos">Repuestos</option>
+                    <option value="Llantas">Llantas</option>
+                    <option value="Baterías">Baterías</option>
                     <option value="Tanques">Tanques</option>
                     <option value="Farolas">Farolas</option>
                     <option value="Defensas">Defensas</option>
                     <option value="Espejos">Espejos</option>
                     <option value="Carenajes">Carenajes</option>
                     <option value="Frenos">Frenos</option>
-                    <option value="Accesorios">Accesorios</option>
                     <option value="Mantenimiento">Mantenimiento</option>
                   </select>
                 </div>

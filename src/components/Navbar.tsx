@@ -21,12 +21,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
+    { name: 'CASCOS', category: 'Cascos' },
+    { name: 'ACCESORIOS', category: 'Accesorios' },
+    { name: 'REPUESTOS', category: 'Repuestos' },
+    { name: 'LLANTAS', category: 'Llantas' },
+    { name: 'BATERÍAS', category: 'Baterías' },
     { name: 'TANQUES', category: 'Tanques' },
     { name: 'FAROLAS', category: 'Farolas' },
-    { name: 'DEFENSAS', category: 'Defensas' },
-    { name: 'ESPEJOS', category: 'Espejos' },
-    { name: 'CARENAJES', category: 'Carenajes' },
-    { name: 'FRENOS', category: 'Frenos' },
     { name: 'OFERTAS', category: 'Sale', isSpecial: true },
   ];
 
