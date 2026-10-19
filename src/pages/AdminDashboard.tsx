@@ -200,28 +200,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 text-gray-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f8f9fa] text-gray-900 flex flex-col font-sans">
       
       {/* Top Admin Navbar */}
-      <header className="bg-dark-900 border-b border-dark-800 sticky top-0 z-30">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           
           <div className="flex items-center gap-4">
             <img
-              src="/mpp-logo.png"
+              src="/mpp-logo-dark.png"
               alt="MPP"
               className="h-10 sm:h-12 w-auto object-contain"
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-black uppercase text-white tracking-wider">
+                <span className="text-sm font-black uppercase text-gray-900 tracking-wider">
                   PANEL DE ADMINISTRACIÓN
                 </span>
-                <span className="bg-lime text-black font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">
+                <span className="bg-lime text-black font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider shadow-xs">
                   ROL: ADMIN
                 </span>
               </div>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-gray-500 font-medium">
                 Inventario, Pedidos & Supabase Storage
               </p>
             </div>
@@ -230,17 +230,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           <div className="flex items-center gap-3">
             <button
               onClick={loadData}
-              className="p-2 text-gray-400 hover:text-white rounded-lg bg-dark-800 hover:bg-dark-700 transition-colors"
+              className="p-2 text-gray-600 hover:text-black rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
               title="Refrescar datos"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime-dark' : ''}`} />
             </button>
 
             <button
               onClick={onBackToStore}
-              className="bg-lime hover:bg-lime-bright text-black font-black text-xs uppercase px-4 py-2 rounded tracking-wider flex items-center gap-2 transition-all shadow-md shadow-lime/20"
+              className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-4 py-2.5 rounded-lg tracking-wider flex items-center gap-2 transition-all shadow-sm"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-3.5 h-3.5 text-lime" />
               <span>Volver a la Tienda</span>
             </button>
           </div>
@@ -255,73 +255,73 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Card 1: Ventas Totales */}
-          <div className="bg-dark-900 border border-dark-800 rounded-xl p-5 relative overflow-hidden group hover:border-lime/40 transition-colors">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Ventas Totales (COP)
               </span>
-              <div className="p-2 rounded-lg bg-lime/10 text-lime">
+              <div className="p-2 rounded-xl bg-lime/20 text-black">
                 <TrendingUp className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-white">
+            <div className="text-2xl font-black text-gray-900">
               {formatCurrency(totalSalesCOP)}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-gray-500 font-medium mt-1">
               {totalOrdersCount} pedidos procesados
             </p>
           </div>
 
           {/* Card 2: Valor en Inventario */}
-          <div className="bg-dark-900 border border-dark-800 rounded-xl p-5 relative overflow-hidden group hover:border-lime/40 transition-colors">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Valor en Inventario
               </span>
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+              <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
                 <Package className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-white">
+            <div className="text-2xl font-black text-gray-900">
               {formatCurrency(totalInventoryValue)}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-gray-500 font-medium mt-1">
               {products.length} productos registrados
             </p>
           </div>
 
           {/* Card 3: Pedidos Registrados */}
-          <div className="bg-dark-900 border border-dark-800 rounded-xl p-5 relative overflow-hidden group hover:border-lime/40 transition-colors">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Órdenes Registradas
               </span>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+              <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
                 <ShoppingBag className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-white">
+            <div className="text-2xl font-black text-gray-900">
               {totalOrdersCount}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-gray-500 font-medium mt-1">
               Descuento atómico vía RPC
             </p>
           </div>
 
           {/* Card 4: Alertas de Stock Bajo */}
-          <div className="bg-dark-900 border border-dark-800 rounded-xl p-5 relative overflow-hidden group hover:border-lime/40 transition-colors">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Alertas de Stock
               </span>
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+              <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
                 <AlertTriangle className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-amber-400">
+            <div className="text-2xl font-black text-amber-600">
               {lowStockItems.length}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-gray-500 font-medium mt-1">
               Referencias con existencias &lt; 25
             </p>
           </div>
@@ -329,12 +329,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-2 border-b border-dark-800 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto">
           {[
             { id: 'inventory', label: 'Inventario de Productos', icon: Package },
             { id: 'orders', label: 'Gestión de Pedidos', icon: ShoppingBag },
             { id: 'coupons', label: 'Cupones de Descuento', icon: Tag },
-            { id: 'storage', label: 'Supabase Storage (Fotos)', icon: Upload },
+            { id: 'storage', label: 'Supabase Storage (Fotos & Videos)', icon: Upload },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -342,13 +342,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                   active
-                    ? 'bg-lime text-black shadow-lg shadow-lime/20'
-                    : 'text-gray-400 hover:text-white hover:bg-dark-900'
+                    ? 'bg-black text-white shadow-sm'
+                    : 'text-gray-600 hover:text-black hover:bg-gray-100'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={`w-4 h-4 ${active ? 'text-lime' : ''}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -362,25 +362,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           <div className="space-y-4">
             
             {/* Toolbar: Search, Category Filter, and Add Button */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-dark-900 p-4 rounded-xl border border-dark-800">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
               <div className="flex items-center gap-3 flex-1">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Buscar por SKU o Nombre..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-dark-950 border border-dark-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black focus:bg-white transition-all font-medium"
                   />
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <Filter className="w-4 h-4 text-gray-500" />
+                  <Filter className="w-4 h-4 text-gray-400" />
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-dark-950 border border-dark-700 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-lime"
+                    className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium transition-all"
                   >
                     <option value="All">Todas las categorías</option>
                     <option value="Tanques">Tanques</option>
@@ -412,37 +412,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   });
                   setIsProductModalOpen(true);
                 }}
-                className="bg-lime hover:bg-lime-bright text-black font-black text-xs uppercase px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-lime/20"
+                className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-lime" />
                 <span>Crear Producto</span>
               </button>
             </div>
 
             {/* Inventory Table */}
-            <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-xl">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-dark-950 text-gray-400 uppercase text-[10px] tracking-wider border-b border-dark-800">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-200 font-bold">
                     <tr>
-                      <th className="py-3 px-4">Producto</th>
-                      <th className="py-3 px-4">SKU</th>
-                      <th className="py-3 px-4">Categoría</th>
-                      <th className="py-3 px-4">Precio (COP)</th>
-                      <th className="py-3 px-4">Stock</th>
-                      <th className="py-3 px-4">Packing / Peso</th>
-                      <th className="py-3 px-4">Estado</th>
-                      <th className="py-3 px-4 text-right">Acciones</th>
+                      <th className="py-3.5 px-4">Producto</th>
+                      <th className="py-3.5 px-4">SKU</th>
+                      <th className="py-3.5 px-4">Categoría</th>
+                      <th className="py-3.5 px-4">Precio (COP)</th>
+                      <th className="py-3.5 px-4">Stock</th>
+                      <th className="py-3.5 px-4">Packing / Peso</th>
+                      <th className="py-3.5 px-4">Estado</th>
+                      <th className="py-3.5 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-dark-800">
+                  <tbody className="divide-y divide-gray-100">
                     {filteredProducts.map((p) => (
-                      <tr key={p.id} className="hover:bg-dark-850/60 transition-colors">
+                      <tr key={p.id} className="hover:bg-gray-50/80 transition-colors">
                         
                         {/* Image & Name */}
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded p-1 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-gray-50 rounded-lg p-1 flex items-center justify-center shrink-0 border border-gray-100">
                               <img
                                 src={p.images[0]}
                                 alt={p.name}
@@ -450,10 +450,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                               />
                             </div>
                             <div>
-                              <span className="font-bold text-white block truncate max-w-[200px]">
+                              <span className="font-bold text-gray-900 block truncate max-w-[200px]">
                                 {p.name}
                               </span>
-                              <span className="text-[10px] text-gray-500">
+                              <span className="text-[10px] text-gray-500 font-medium">
                                 {p.brand || 'MPP'}
                               </span>
                             </div>
@@ -461,27 +461,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                         </td>
 
                         {/* SKU */}
-                        <td className="py-3 px-4 font-mono text-gray-300">
+                        <td className="py-3 px-4 font-mono font-bold text-gray-700">
                           {p.sku}
                         </td>
 
                         {/* Category */}
-                        <td className="py-3 px-4 text-gray-300">
+                        <td className="py-3 px-4 text-gray-700 font-medium">
                           {p.category}
                         </td>
 
                         {/* Price */}
-                        <td className="py-3 px-4 font-black text-lime">
+                        <td className="py-3 px-4 font-black text-gray-900">
                           {formatCurrency(p.discount_price ?? p.price)}
                         </td>
 
                         {/* Stock */}
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold ${
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
                               p.stock_qty < 20
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                : 'bg-lime/10 text-lime border border-lime/30'
+                                ? 'bg-red-50 text-red-600 border border-red-200'
+                                : 'bg-lime/20 text-gray-900 border border-lime/40'
                             }`}
                           >
                             {p.stock_qty} unid.
@@ -489,17 +489,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                         </td>
 
                         {/* Logistics specs */}
-                        <td className="py-3 px-4 text-[11px] text-gray-400">
+                        <td className="py-3 px-4 text-[11px] text-gray-500">
                           {p.gross_weight_kg ? `${p.gross_weight_kg} kg` : '-'}
                         </td>
 
                         {/* Status */}
                         <td className="py-3 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                               p.is_active
-                                ? 'bg-emerald-500/10 text-emerald-400'
-                                : 'bg-gray-500/10 text-gray-400'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-gray-100 text-gray-500'
                             }`}
                           >
                             {p.is_active ? 'Activo' : 'Inactivo'}
@@ -514,14 +514,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                                 setEditingProduct(p);
                                 setIsProductModalOpen(true);
                               }}
-                              className="p-1.5 text-gray-400 hover:text-lime rounded hover:bg-dark-800 transition-colors"
+                              className="p-1.5 text-gray-500 hover:text-black rounded-lg hover:bg-gray-100 transition-colors"
                               title="Editar"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(p.id)}
-                              className="p-1.5 text-gray-400 hover:text-red-400 rounded hover:bg-dark-800 transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors"
                               title="Desactivar"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -544,39 +544,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         {/* ========================================================================= */}
         {activeTab === 'orders' && (
           <div className="space-y-4">
-            <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-xl">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-dark-950 text-gray-400 uppercase text-[10px] tracking-wider border-b border-dark-800">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-200 font-bold">
                     <tr>
-                      <th className="py-3 px-4">Consecutivo</th>
-                      <th className="py-3 px-4">Cliente & Destino</th>
-                      <th className="py-3 px-4">Fecha</th>
-                      <th className="py-3 px-4">Total</th>
-                      <th className="py-3 px-4">Pago</th>
-                      <th className="py-3 px-4">Estado del Pedido</th>
+                      <th className="py-3.5 px-4">Consecutivo</th>
+                      <th className="py-3.5 px-4">Cliente & Destino</th>
+                      <th className="py-3.5 px-4">Fecha</th>
+                      <th className="py-3.5 px-4">Total</th>
+                      <th className="py-3.5 px-4">Pago</th>
+                      <th className="py-3.5 px-4">Estado del Pedido</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-dark-800">
+                  <tbody className="divide-y divide-gray-100">
                     {orders.map((ord) => (
-                      <tr key={ord.id} className="hover:bg-dark-850/60 transition-colors">
+                      <tr key={ord.id} className="hover:bg-gray-50/80 transition-colors">
                         
-                        <td className="py-3.5 px-4 font-mono font-bold text-lime">
+                        <td className="py-3.5 px-4 font-mono font-bold text-gray-900">
                           {ord.order_number}
                         </td>
 
                         <td className="py-3.5 px-4">
                           <div>
-                            <span className="font-bold text-white block">
+                            <span className="font-bold text-gray-900 block">
                               {ord.shipping_address?.full_name || 'Cliente MPP'}
                             </span>
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-[11px] text-gray-500">
                               {ord.shipping_address?.city || 'Colombia'} • {ord.shipping_address?.address || ''}
                             </span>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 text-gray-400 text-[11px]">
+                        <td className="py-3.5 px-4 text-gray-500 text-[11px]">
                           {new Date(ord.created_at).toLocaleDateString('es-CO', {
                             year: 'numeric',
                             month: 'short',
@@ -584,16 +584,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                           })}
                         </td>
 
-                        <td className="py-3.5 px-4 font-black text-white">
+                        <td className="py-3.5 px-4 font-black text-gray-900">
                           {formatCurrency(ord.total_amount)}
                         </td>
 
                         <td className="py-3.5 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                               ord.payment_status === 'paid_in_full'
-                                ? 'bg-lime/20 text-lime'
-                                : 'bg-amber-500/20 text-amber-400'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}
                           >
                             {ord.payment_status === 'paid_in_full' ? 'Pagado' : 'Pendiente'}
@@ -604,7 +604,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                           <select
                             value={ord.status}
                             onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                            className="bg-dark-950 border border-dark-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-lime"
+                            className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium transition-all"
                           >
                             <option value="pending">⏳ Pendiente</option>
                             <option value="processing">⚙️ En Proceso</option>
@@ -630,9 +630,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           <div className="space-y-6">
             
             {/* Create Coupon Form */}
-            <div className="bg-dark-900 border border-dark-800 rounded-xl p-5">
-              <h3 className="text-xs font-black uppercase tracking-wider text-lime mb-4 flex items-center gap-2">
-                <Tag className="w-4 h-4" /> Crear Nuevo Cupón Promocional
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs">
+              <h3 className="text-xs font-black uppercase tracking-wider text-gray-900 mb-4 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-black" /> Crear Nuevo Cupón Promocional
               </h3>
 
               <div className="flex flex-wrap gap-3">
@@ -641,7 +641,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   placeholder="Código (ej. MPP15)"
                   value={newCouponCode}
                   onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
-                  className="bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white placeholder-gray-500 font-mono font-bold focus:outline-none focus:border-lime uppercase"
+                  className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 placeholder-gray-400 font-mono font-bold focus:outline-none focus:border-black focus:bg-white uppercase"
                 />
 
                 <input
@@ -649,7 +649,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   placeholder="% Descuento"
                   value={newCouponValue}
                   onChange={(e) => setNewCouponValue(Number(e.target.value))}
-                  className="bg-dark-950 border border-dark-700 rounded px-3 py-2 text-xs text-white placeholder-gray-500 w-28 focus:outline-none focus:border-lime"
+                  className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 placeholder-gray-400 w-28 focus:outline-none focus:border-black focus:bg-white"
                 />
 
                 <button
@@ -668,7 +668,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     ]);
                     setNewCouponCode('');
                   }}
-                  className="bg-lime hover:bg-lime-bright text-black font-black text-xs uppercase px-5 py-2 rounded transition-colors"
+                  className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-5 py-2 rounded-lg transition-colors shadow-xs"
                 >
                   Agregar Cupón
                 </button>
@@ -676,38 +676,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
             </div>
 
             {/* Coupons List */}
-            <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-dark-950 text-gray-400 uppercase text-[10px] tracking-wider border-b border-dark-800">
+                <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-200 font-bold">
                   <tr>
-                    <th className="py-3 px-4">Código</th>
-                    <th className="py-3 px-4">Tipo</th>
-                    <th className="py-3 px-4">Descuento</th>
-                    <th className="py-3 px-4">Usos Realizados</th>
-                    <th className="py-3 px-4">Límite</th>
-                    <th className="py-3 px-4">Estado</th>
+                    <th className="py-3.5 px-4">Código</th>
+                    <th className="py-3.5 px-4">Tipo</th>
+                    <th className="py-3.5 px-4">Descuento</th>
+                    <th className="py-3.5 px-4">Usos Realizados</th>
+                    <th className="py-3.5 px-4">Límite</th>
+                    <th className="py-3.5 px-4">Estado</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dark-800">
+                <tbody className="divide-y divide-gray-100">
                   {coupons.map((c) => (
-                    <tr key={c.code} className="hover:bg-dark-850/60">
-                      <td className="py-3 px-4 font-mono font-black text-lime">
+                    <tr key={c.code} className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-4 font-mono font-black text-gray-900">
                         {c.code}
                       </td>
-                      <td className="py-3 px-4 text-gray-300 uppercase">
+                      <td className="py-3.5 px-4 text-gray-600 uppercase font-medium">
                         {c.discount_type}
                       </td>
-                      <td className="py-3 px-4 font-bold text-white">
+                      <td className="py-3.5 px-4 font-black text-gray-900">
                         {c.discount_value}%
                       </td>
-                      <td className="py-3 px-4 text-gray-300">
+                      <td className="py-3.5 px-4 text-gray-600 font-medium">
                         {c.current_uses}
                       </td>
-                      <td className="py-3 px-4 text-gray-400">
+                      <td className="py-3.5 px-4 text-gray-500">
                         {c.max_uses}
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase">
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold uppercase">
                           Activo
                         </span>
                       </td>
@@ -725,22 +725,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         {/* ========================================================================= */}
         {activeTab === 'storage' && (
           <div className="space-y-6">
-            <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 max-w-2xl">
-              <h3 className="text-sm font-black uppercase tracking-wider text-lime mb-2 flex items-center gap-2">
-                <Upload className="w-4 h-4" /> Subida Directa a Supabase Storage ("products")
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl shadow-xs">
+              <h3 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-2 flex items-center gap-2">
+                <Upload className="w-4 h-4 text-black" /> Subida Directa a Supabase Storage ("products")
               </h3>
-              <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-                Selecciona una foto o video de producto desde tu computador. Se subirá al bucket público <code className="text-lime bg-dark-950 px-1 py-0.5 rounded">products/images/</code> o <code className="text-lime bg-dark-950 px-1 py-0.5 rounded">products/videos/</code> de Supabase y te generará la URL directa lista para asociar al producto.
+              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                Selecciona una foto o video de producto desde tu computador. Se subirá al bucket público <code className="text-gray-900 font-mono font-bold bg-gray-100 px-1 py-0.5 rounded">products/images/</code> o <code className="text-gray-900 font-mono font-bold bg-gray-100 px-1 py-0.5 rounded">products/videos/</code> de Supabase y te generará la URL directa lista para asociar al producto.
               </p>
 
-              <div className="border-2 border-dashed border-dark-700 hover:border-lime rounded-xl p-8 text-center bg-dark-950/60 transition-colors">
-                <div className="flex justify-center items-center gap-3 mb-3 text-gray-500">
+              <div className="border-2 border-dashed border-gray-200 hover:border-black rounded-2xl p-8 text-center bg-gray-50/60 transition-colors">
+                <div className="flex justify-center items-center gap-3 mb-3 text-gray-400">
                   <ImageIcon className="w-8 h-8" />
                   <span className="text-xl font-light">/</span>
                   <Video className="w-8 h-8" />
                 </div>
                 <label className="cursor-pointer">
-                  <span className="bg-lime hover:bg-lime-bright text-black font-black text-xs uppercase px-5 py-2.5 rounded-lg inline-block transition-all shadow-md shadow-lime/20 mb-2">
+                  <span className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-5 py-2.5 rounded-xl inline-block transition-all shadow-sm mb-2">
                     {uploadingFile ? 'Subiendo archivo multimedia...' : 'Seleccionar Foto o Video'}
                   </span>
                   <input
@@ -750,17 +750,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     className="hidden"
                   />
                 </label>
-                <p className="text-[11px] text-gray-500 mt-2">
+                <p className="text-[11px] text-gray-500 mt-2 font-medium">
                   Formatos soportados: JPG, PNG, WEBP, MP4, WEBM, MOV (hasta 50MB)
                 </p>
               </div>
 
               {/* Upload Result */}
               {uploadedMedia && (
-                <div className="mt-6 p-4 rounded-xl bg-dark-950 border border-lime/40 space-y-3">
+                <div className="mt-6 p-4 rounded-xl bg-gray-50 border border-lime/60 space-y-3">
                   <div className="flex items-center gap-3">
                     {uploadedMedia.type === 'video' ? (
-                      <div className="w-20 h-20 bg-black rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-dark-700">
+                      <div className="w-20 h-20 bg-black rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-gray-200">
                         <video
                           src={uploadedMedia.url}
                           className="w-full h-full object-cover"
@@ -771,21 +771,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       <img
                         src={uploadedMedia.url}
                         alt="Uploaded preview"
-                        className="w-20 h-20 object-cover rounded-lg bg-white p-1 shrink-0"
+                        className="w-20 h-20 object-contain rounded-lg bg-white p-1 shrink-0 border border-gray-200"
                       />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-lime block">
+                        <span className="text-xs font-bold text-gray-900 block">
                           ¡Archivo subido exitosamente a Supabase Storage!
                         </span>
                         <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                          uploadedMedia.type === 'video' ? 'bg-purple-500/20 text-purple-300' : 'bg-lime/20 text-lime'
+                          uploadedMedia.type === 'video' ? 'bg-purple-100 text-purple-700' : 'bg-lime/30 text-gray-900'
                         }`}>
                           {uploadedMedia.type === 'video' ? 'VIDEO' : 'FOTO'}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-400 truncate">
+                      <p className="text-[11px] text-gray-500 font-mono truncate">
                         {uploadedMedia.url}
                       </p>
                     </div>
@@ -797,7 +797,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       setCopiedUrl(true);
                       setTimeout(() => setCopiedUrl(false), 2000);
                     }}
-                    className="w-full bg-dark-800 hover:bg-dark-700 text-white font-bold text-xs py-2 rounded flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-black hover:bg-gray-800 text-white font-bold text-xs py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
                   >
                     {copiedUrl ? (
                       <>
@@ -823,16 +823,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
       {/* MODAL: CREAR / EDITAR PRODUCTO */}
       {/* ========================================================================= */}
       {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-dark-900 border border-dark-800 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl text-gray-100 my-8">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-gray-900 my-8 animate-in fade-in zoom-in-95 duration-200">
             
-            <div className="p-5 border-b border-dark-800 flex items-center justify-between bg-dark-950">
-              <h3 className="text-sm font-black uppercase text-white tracking-wider">
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white">
+              <h3 className="text-sm font-black uppercase text-gray-900 tracking-wider">
                 {editingProduct?.id ? 'Editar Producto' : 'Crear Nuevo Producto en Catálogo'}
               </h3>
               <button
                 onClick={() => setIsProductModalOpen(false)}
-                className="text-gray-400 hover:text-white"
+                className="p-1 text-gray-400 hover:text-black rounded-full hover:bg-gray-100 transition-colors"
               >
                 ✕
               </button>
@@ -842,7 +842,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Nombre del Producto *
                   </label>
                   <input
@@ -850,12 +850,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     required
                     value={editingProduct?.name || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     SKU Único *
                   </label>
                   <input
@@ -863,14 +863,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     required
                     value={editingProduct?.sku || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white font-mono focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 font-mono font-bold focus:outline-none focus:border-black focus:bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Precio Normal (COP) *
                   </label>
                   <input
@@ -878,12 +878,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     required
                     value={editingProduct?.price || 0}
                     onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime font-black"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-black"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Precio Por Mayor (COP)
                   </label>
                   <input
@@ -891,12 +891,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     value={editingProduct?.wholesale_price || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, wholesale_price: Number(e.target.value) || null })}
                     placeholder="Mayorista"
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-lime focus:outline-none focus:border-lime font-bold"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Precio Oferta (COP)
                   </label>
                   <input
@@ -904,12 +904,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     value={editingProduct?.discount_price || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, discount_price: Number(e.target.value) || null })}
                     placeholder="Opcional"
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Stock (Unid) *
                   </label>
                   <input
@@ -917,20 +917,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     required
                     value={editingProduct?.stock_qty || 0}
                     onChange={(e) => setEditingProduct({ ...editingProduct, stock_qty: Number(e.target.value) })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-bold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Categoría *
                   </label>
                   <select
                     value={editingProduct?.category || 'Tanques'}
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-2.5 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   >
                     <option value="Tanques">Tanques</option>
                     <option value="Farolas">Farolas</option>
@@ -944,7 +944,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Marca / Fabricante
                   </label>
                   <input
@@ -952,18 +952,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     value={editingProduct?.brand || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, brand: e.target.value })}
                     placeholder="Duvox, Growsun, MPP..."
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 font-semibold mb-1">
+                  <label className="block text-gray-700 font-bold mb-1">
                     Estado en Tienda
                   </label>
                   <select
                     value={editingProduct?.status_text || 'Disponible'}
                     onChange={(e) => setEditingProduct({ ...editingProduct, status_text: e.target.value })}
-                    className="w-full bg-dark-950 border border-dark-700 rounded px-2.5 py-2 text-white focus:outline-none focus:border-lime"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   >
                     <option value="Disponible">Disponible</option>
                     <option value="Por agotarse">Por agotarse</option>
@@ -973,14 +973,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               </div>
 
               {/* SECCIÓN 1: FOTOS DEL PRODUCTO (SUPABASE STORAGE) */}
-              <div className="p-3 bg-dark-950 rounded-lg border border-dark-800 space-y-3">
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-200 font-bold flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-lime" /> Fotografías del Producto (Supabase Storage)
+                  <span className="text-gray-900 font-bold flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-black" /> Fotografías del Producto (Supabase Storage)
                   </span>
 
-                  <label className="cursor-pointer bg-lime hover:bg-lime-bright text-black font-extrabold text-[11px] uppercase px-3 py-1.5 rounded transition-all flex items-center gap-1.5 shadow-sm">
-                    <Upload className="w-3.5 h-3.5" />
+                  <label className="cursor-pointer bg-black hover:bg-gray-800 text-white font-extrabold text-[11px] uppercase px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs">
+                    <Upload className="w-3.5 h-3.5 text-lime" />
                     <span>{modalUploading === 'photo' ? 'Subiendo...' : 'Subir Foto'}</span>
                     <input
                       type="file"
@@ -999,7 +999,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     placeholder="O pegar URL de imagen (https://...)"
                     value={newPhotoUrl}
                     onChange={(e) => setNewPhotoUrl(e.target.value)}
-                    className="flex-1 bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-lime"
+                    className="flex-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black"
                   />
                   <button
                     type="button"
@@ -1012,7 +1012,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       });
                       setNewPhotoUrl('');
                     }}
-                    className="bg-dark-800 hover:bg-dark-700 text-white px-3 py-1.5 rounded font-bold text-xs transition-colors"
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-900 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors"
                   >
                     Añadir
                   </button>
@@ -1023,7 +1023,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   {(editingProduct?.images || []).map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="relative group w-16 h-16 bg-white rounded-lg p-1 border border-dark-700 overflow-hidden flex items-center justify-center"
+                      className="relative group w-16 h-16 bg-white rounded-xl p-1 border border-gray-200 overflow-hidden flex items-center justify-center shadow-xs"
                     >
                       <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
                       <button
@@ -1040,19 +1040,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     </div>
                   ))}
                   {(!editingProduct?.images || editingProduct.images.length === 0) && (
-                    <span className="text-[11px] text-gray-500 italic">No hay fotos asignadas aún</span>
+                    <span className="text-[11px] text-gray-400 italic">No hay fotos asignadas aún</span>
                   )}
                 </div>
               </div>
 
               {/* SECCIÓN 2: VIDEOS DEL PRODUCTO (SUPABASE STORAGE) */}
-              <div className="p-3 bg-dark-950 rounded-lg border border-dark-800 space-y-3">
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-200 font-bold flex items-center gap-2">
-                    <Video className="w-4 h-4 text-purple-400" /> Videos del Producto (Supabase Storage)
+                  <span className="text-gray-900 font-bold flex items-center gap-2">
+                    <Video className="w-4 h-4 text-purple-600" /> Videos del Producto (Supabase Storage)
                   </span>
 
-                  <label className="cursor-pointer bg-purple-500 hover:bg-purple-400 text-white font-extrabold text-[11px] uppercase px-3 py-1.5 rounded transition-all flex items-center gap-1.5 shadow-sm">
+                  <label className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-[11px] uppercase px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs">
                     <Upload className="w-3.5 h-3.5" />
                     <span>{modalUploading === 'video' ? 'Subiendo...' : 'Subir Video'}</span>
                     <input
@@ -1072,7 +1072,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     placeholder="O pegar URL de video (https://... mp4, webm o link directo)"
                     value={newVideoUrl}
                     onChange={(e) => setNewVideoUrl(e.target.value)}
-                    className="flex-1 bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-lime"
+                    className="flex-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black"
                   />
                   <button
                     type="button"
@@ -1085,7 +1085,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       });
                       setNewVideoUrl('');
                     }}
-                    className="bg-dark-800 hover:bg-dark-700 text-white px-3 py-1.5 rounded font-bold text-xs transition-colors"
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-900 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors"
                   >
                     Añadir
                   </button>
@@ -1096,7 +1096,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   {(editingProduct?.videos || []).map((videoUrl, idx) => (
                     <div
                       key={idx}
-                      className="relative group w-24 h-16 bg-black rounded-lg border border-purple-500/40 overflow-hidden flex items-center justify-center"
+                      className="relative group w-24 h-16 bg-black rounded-xl border border-purple-300 overflow-hidden flex items-center justify-center shadow-xs"
                     >
                       <video src={videoUrl} className="w-full h-full object-cover opacity-80" />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -1116,41 +1116,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     </div>
                   ))}
                   {(!editingProduct?.videos || editingProduct.videos.length === 0) && (
-                    <span className="text-[11px] text-gray-500 italic">No hay videos asignados aún (opcional)</span>
+                    <span className="text-[11px] text-gray-400 italic">No hay videos asignados aún (opcional)</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-400 font-semibold mb-1">
+                <label className="block text-gray-700 font-bold mb-1">
                   Descripción Comercial
                 </label>
                 <textarea
                   rows={3}
                   value={editingProduct?.description || ''}
                   onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                  className="w-full bg-dark-950 border border-dark-700 rounded px-3 py-2 text-white focus:outline-none focus:border-lime"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                 />
               </div>
 
               {/* Logistics / Packing Specs */}
-              <div className="p-3 bg-dark-950 rounded-lg border border-dark-800 space-y-3">
-                <span className="text-gray-300 font-bold block">
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                <span className="text-gray-900 font-bold block">
                   Especificaciones de Empaque & Importación
                 </span>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] text-gray-400">Peso Bruto (kg)</label>
+                    <label className="block text-[10px] text-gray-500 font-medium">Peso Bruto (kg)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={editingProduct?.gross_weight_kg || 0}
                       onChange={(e) => setEditingProduct({ ...editingProduct, gross_weight_kg: Number(e.target.value) })}
-                      className="w-full bg-dark-900 border border-dark-700 rounded px-2 py-1 text-white"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-900 font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-gray-400">Largo x Ancho (mm)</label>
+                    <label className="block text-[10px] text-gray-500 font-medium">Largo x Ancho (mm)</label>
                     <input
                       type="text"
                       placeholder="380x290"
@@ -1162,32 +1162,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                           width_mm: Number(parts[1]) || 0,
                         });
                       }}
-                      className="w-full bg-dark-900 border border-dark-700 rounded px-2 py-1 text-white"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-900 font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-gray-400">Detalles Empaque</label>
+                    <label className="block text-[10px] text-gray-500 font-medium">Detalles Empaque</label>
                     <input
                       type="text"
                       value={editingProduct?.package_details || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, package_details: e.target.value })}
-                      className="w-full bg-dark-900 border border-dark-700 rounded px-2 py-1 text-white"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-900 font-medium"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-dark-800">
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2 rounded bg-dark-800 text-gray-300 hover:text-white"
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded bg-lime hover:bg-lime-bright text-black font-black uppercase tracking-wider shadow-md shadow-lime/20"
+                  className="px-6 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wider shadow-sm transition-colors"
                 >
                   Guardar en Catálogo
                 </button>

@@ -31,7 +31,7 @@ export const ValuePropsBar: React.FC = () => {
   ];
 
   return (
-    <section className="bg-dark-950 border-b border-dark-800 py-6 px-4">
+    <section className="bg-white border-b border-gray-100 py-6 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-4">
           {props.map((item, idx) => {
@@ -41,14 +41,14 @@ export const ValuePropsBar: React.FC = () => {
                 key={idx}
                 className="flex items-center gap-3.5 group transition-transform duration-200"
               >
-                <div className="p-2.5 rounded-lg bg-dark-900 border border-dark-800 text-gray-300 group-hover:text-lime group-hover:border-lime/40 transition-colors shrink-0">
+                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 group-hover:text-black group-hover:bg-lime/20 group-hover:border-lime transition-all shrink-0">
                   <Icon className="w-5 h-5 stroke-[1.75]" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-white group-hover:text-lime transition-colors">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-gray-900 group-hover:text-black transition-colors">
                     {item.title}
                   </h4>
-                  <p className="text-[11px] text-gray-400 font-medium">
+                  <p className="text-[11px] text-gray-500 font-medium">
                     {item.subtitle}
                   </p>
                 </div>

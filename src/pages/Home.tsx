@@ -58,22 +58,22 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
     switch (cat.toLowerCase()) {
       case 'all':
         return 'EXPLORA NUESTRA COLECCIÓN COMPLETA';
-      case 'helmets':
-        return 'CASCOS CERTIFICADOS DE ALTA SEGURIDAD';
-      case 'riding gear':
-        return 'CHAQUETAS Y EQUIPACIÓN DEPORTIVA';
-      case 'gloves':
-        return 'GUANTES DE PISTA Y CALLE';
-      case 'exhaust':
-        return 'SISTEMAS DE ESCAPE DE ALTO RENDIMIENTO';
-      case 'tires':
-        return 'LLANTAS Y NEUMÁTICOS DEPORTIVOS';
-      case 'accessories':
+      case 'tanques':
+        return 'TANQUES DE COMBUSTIBLE PARA MOTO';
+      case 'farolas':
+        return 'FAROLAS Y SISTEMAS DE ILUMINACIÓN LED';
+      case 'defensas':
+        return 'DEFENSAS Y PROTECCIÓN DE MOTOR';
+      case 'espejos':
+        return 'ESPEJOS RETROVISORES Y ACCESORIOS';
+      case 'carenajes':
+        return 'CARENAJES, TAPAS Y CÚPULAS AERODINÁMICAS';
+      case 'frenos':
+        return 'DISCOS, PASTILLAS Y SISTEMAS DE FRENO';
+      case 'accesorios':
         return 'ACCESORIOS Y SOPORTES PARA MOTO';
-      case 'batteries':
-        return 'BATERÍAS DE ALTO ARRANQUE';
-      case 'maintenance':
-        return 'LUBRICANTES Y MANTENIMIENTO';
+      case 'mantenimiento':
+        return 'LUBRICANTES Y MANTENIMIENTO PREVENTIVO';
       case 'sale':
         return 'OFERTAS Y PROMOCIONES ESPECIALES';
       default:
@@ -83,12 +83,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
 
   const categoryFilters = [
     { label: 'Todos', key: 'All' },
-    { label: 'Cascos', key: 'Helmets' },
-    { label: 'Equipación', key: 'Riding Gear' },
-    { label: 'Guantes', key: 'Gloves' },
-    { label: 'Escapes', key: 'Exhaust' },
-    { label: 'Llantas', key: 'Tires' },
-    { label: 'Accesorios', key: 'Accessories' },
+    { label: 'Tanques', key: 'Tanques' },
+    { label: 'Farolas', key: 'Farolas' },
+    { label: 'Defensas', key: 'Defensas' },
+    { label: 'Espejos', key: 'Espejos' },
+    { label: 'Carenajes', key: 'Carenajes' },
+    { label: 'Frenos', key: 'Frenos' },
+    { label: 'Accesorios', key: 'Accesorios' },
     { label: 'Ofertas', key: 'Sale' },
   ];
 
@@ -162,7 +163,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
       />
 
       {/* 9. EXTENDED CATALOG SECTION (DYNAMIC & FILTERABLE) */}
-      <section id="catalog-section" className="py-16 px-4 bg-gray-50 border-b border-gray-200">
+      <section id="catalog-section" className="py-16 px-4 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

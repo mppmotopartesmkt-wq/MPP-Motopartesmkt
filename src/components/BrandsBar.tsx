@@ -17,14 +17,14 @@ export const BrandsBar: React.FC<BrandsBarProps> = ({ onSelectBrand }) => {
   ];
 
   return (
-    <div className="bg-dark-950 py-8 px-4 border-b border-dark-800">
+    <div className="bg-gray-50 py-8 px-4 border-b border-gray-100">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6 sm:gap-8 items-center justify-items-center">
           {brands.map((brand) => (
             <div
               key={brand.name}
               onClick={() => onSelectBrand && onSelectBrand(brand.name)}
-              className="text-gray-400 hover:text-lime cursor-pointer transition-colors duration-200 select-none py-2 text-center"
+              className="text-gray-500 hover:text-black cursor-pointer transition-colors duration-200 select-none py-2 text-center"
             >
               <span className={`text-base sm:text-lg ${brand.fontClass}`}>
                 {brand.name}
