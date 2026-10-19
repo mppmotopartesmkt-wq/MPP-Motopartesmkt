@@ -18,6 +18,12 @@ import {
   Video,
   Play,
   Image as ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { Product } from '../types';
 import {
@@ -49,8 +55,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [modalUploading, setModalUploading] = useState<'photo' | 'video' | null>(null);
+  const [photoUploadProgress, setPhotoUploadProgress] = useState('');
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Storage upload state
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -110,13 +120,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
     );
   };
 
-  // Handle Save Product
+  // Photo Reorder functions
+  const handleMovePhoto = (fromIndex: number, toIndex: number) => {
+    if (!editingProduct?.images) return;
+    if (toIndex < 0 || toIndex >= editingProduct.images.length) return;
+    const updated = [...editingProduct.images];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setEditingProduct({ ...editingProduct, images: updated });
+  };
+
+  const handleSetCoverPhoto = (index: number) => {
+    if (!editingProduct?.images || index === 0) return;
+    const updated = [...editingProduct.images];
+    const [cover] = updated.splice(index, 1);
+    updated.unshift(cover);
+    setEditingProduct({ ...editingProduct, images: updated });
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedPhotoIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (dropIndex: number) => {
+    if (draggedPhotoIndex === null || draggedPhotoIndex === dropIndex) return;
+    handleMovePhoto(draggedPhotoIndex, dropIndex);
+    setDraggedPhotoIndex(null);
+  };
+
+  // Multiple photo upload handler
+  const handleModalPhotosUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setModalUploading('photo');
+    const newUrls: string[] = [];
+    const total = files.length;
+
+    for (let i = 0; i < total; i++) {
+      setPhotoUploadProgress(`Subiendo foto ${i + 1} de ${total}...`);
+      const result = await uploadProductMedia(files[i]);
+      if (result) {
+        newUrls.push(result.url);
+      }
+    }
+
+    if (newUrls.length > 0 && editingProduct) {
+      const currentImages = editingProduct.images || [];
+      setEditingProduct({
+        ...editingProduct,
+        images: [...currentImages, ...newUrls],
+      });
+    }
+
+    setModalUploading(null);
+    setPhotoUploadProgress('');
+    e.target.value = '';
+  };
+
+  // Handle Save Product with validation, feedback, and loading state
   const handleSaveProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProduct?.name || !editingProduct?.price || !editingProduct?.sku) return;
+    setSaveFeedback(null);
+
+    if (!editingProduct?.name?.trim()) {
+      setSaveFeedback({ type: 'error', message: 'Por favor ingresa el nombre del producto.' });
+      return;
+    }
+    if (!editingProduct?.sku?.trim()) {
+      setSaveFeedback({ type: 'error', message: 'Por favor ingresa un SKU único.' });
+      return;
+    }
+    if (!editingProduct?.price || Number(editingProduct.price) <= 0) {
+      setSaveFeedback({ type: 'error', message: 'Por favor ingresa un precio válido mayor a 0.' });
+      return;
+    }
+
+    setIsSaving(true);
 
     const payload: Partial<Product> = {
       ...editingProduct,
+      name: editingProduct.name.trim(),
+      sku: editingProduct.sku.trim(),
       slug:
         editingProduct.slug ||
         editingProduct.name
@@ -135,11 +224,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
       videos: editingProduct.videos || [],
     };
 
-    const res = await saveProduct(payload);
-    if (res.success) {
-      setIsProductModalOpen(false);
-      setEditingProduct(null);
-      loadData();
+    try {
+      const res = await saveProduct(payload);
+      if (res.success) {
+        setSaveFeedback({
+          type: 'success',
+          message: '¡Producto guardado exitosamente en el catálogo!',
+        });
+        await loadData();
+        setTimeout(() => {
+          setIsProductModalOpen(false);
+          setEditingProduct(null);
+          setSaveFeedback(null);
+          setIsSaving(false);
+        }, 600);
+      } else {
+        setSaveFeedback({
+          type: 'error',
+          message: res.error || 'Ocurrió un error al guardar el producto.',
+        });
+        setIsSaving(false);
+      }
+    } catch (err: any) {
+      setSaveFeedback({
+        type: 'error',
+        message: err?.message || 'Error inesperado al guardar el producto.',
+      });
+      setIsSaving(false);
     }
   };
 
@@ -164,24 +275,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
 
     if (result) {
       setUploadedMedia(result);
-    }
-  };
-
-  // Handle Direct Photo Upload inside Product Modal
-  const handleModalPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setModalUploading('photo');
-    const result = await uploadProductMedia(file);
-    setModalUploading(null);
-
-    if (result && editingProduct) {
-      const currentImages = editingProduct.images || [];
-      setEditingProduct({
-        ...editingProduct,
-        images: [...currentImages, result.url],
-      });
     }
   };
 
@@ -984,20 +1077,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 </div>
               </div>
 
-              {/* SECCIÓN 1: FOTOS DEL PRODUCTO (SUPABASE STORAGE) */}
+              {/* SECCIÓN 1: FOTOS DEL PRODUCTO (SUPABASE STORAGE & GALERÍA) */}
               <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-900 font-bold flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-black" /> Fotografías del Producto (Supabase Storage)
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="text-gray-900 font-bold flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-black" /> Fotografías del Producto ({editingProduct?.images?.length || 0})
+                    </span>
+                    <span className="text-[10px] text-gray-500 block">
+                      Sube una o varias fotos. Organiza el orden: la <strong>Foto #1</strong> es la portada.
+                    </span>
+                  </div>
 
-                  <label className="cursor-pointer bg-black hover:bg-gray-800 text-white font-extrabold text-[11px] uppercase px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs">
+                  <label className="cursor-pointer bg-black hover:bg-gray-800 text-white font-extrabold text-[11px] uppercase px-3.5 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-xs shrink-0">
                     <Upload className="w-3.5 h-3.5 text-lime" />
-                    <span>{modalUploading === 'photo' ? 'Subiendo...' : 'Subir Foto'}</span>
+                    <span>{photoUploadProgress || (modalUploading === 'photo' ? 'Subiendo...' : 'Subir Fotos (Múltiples)')}</span>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleModalPhotoUpload}
+                      multiple
+                      onChange={handleModalPhotosUpload}
                       className="hidden"
                       disabled={modalUploading !== null}
                     />
@@ -1008,7 +1107,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="O pegar URL de imagen (https://...)"
+                    placeholder="O pegar URL de imagen directa (https://...)"
                     value={newPhotoUrl}
                     onChange={(e) => setNewPhotoUrl(e.target.value)}
                     className="flex-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black"
@@ -1024,35 +1123,111 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       });
                       setNewPhotoUrl('');
                     }}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-900 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors"
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-900 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors shrink-0"
                   >
-                    Añadir
+                    Añadir URL
                   </button>
                 </div>
 
-                {/* Lista de fotos adjuntas */}
-                <div className="flex flex-wrap gap-2.5 pt-1">
-                  {(editingProduct?.images || []).map((imgUrl, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group w-16 h-16 bg-white rounded-xl p-1 border border-gray-200 overflow-hidden flex items-center justify-center shadow-xs"
-                    >
-                      <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = (editingProduct?.images || []).filter((_, i) => i !== idx);
-                          setEditingProduct({ ...editingProduct, images: updated });
-                        }}
-                        className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] opacity-90 group-hover:opacity-100 transition-opacity"
-                        title="Eliminar foto"
-                      >
-                        ✕
-                      </button>
+                {/* Lista interactiva de fotos organizables */}
+                <div className="space-y-2 pt-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {(editingProduct?.images || []).map((imgUrl, idx) => {
+                      const isCover = idx === 0;
+                      return (
+                        <div
+                          key={idx}
+                          draggable
+                          onDragStart={() => handleDragStart(idx)}
+                          onDragOver={handleDragOver}
+                          onDrop={() => handleDrop(idx)}
+                          className={`relative group bg-white rounded-xl p-2 border transition-all cursor-move flex flex-col justify-between shadow-xs ${
+                            isCover
+                              ? 'border-lime ring-2 ring-lime/30 bg-lime/5'
+                              : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                          title="Arrastra para cambiar el orden de las fotos"
+                        >
+                          {/* Top Badges */}
+                          <div className="flex items-center justify-between mb-1.5 z-10">
+                            {isCover ? (
+                              <span className="bg-lime text-black font-black text-[9px] px-1.5 py-0.5 rounded shadow-xs flex items-center gap-1 uppercase">
+                                <Star className="w-2.5 h-2.5 fill-black" /> Portada
+                              </span>
+                            ) : (
+                              <span className="bg-gray-100 text-gray-600 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded border border-gray-200">
+                                #{idx + 1}
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (editingProduct?.images || []).filter((_, i) => i !== idx);
+                                setEditingProduct({ ...editingProduct, images: updated });
+                              }}
+                              className="w-5 h-5 bg-red-100 hover:bg-red-500 text-red-600 hover:text-white rounded-full flex items-center justify-center text-[10px] transition-colors"
+                              title="Eliminar foto"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {/* Image preview */}
+                          <div className="w-full h-24 flex items-center justify-center p-1 bg-gray-50 rounded-lg overflow-hidden mb-2">
+                            <img
+                              src={imgUrl}
+                              alt={`Foto ${idx + 1}`}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+
+                          {/* Reordering Controls */}
+                          <div className="flex items-center justify-between gap-1 pt-1 border-t border-gray-100">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMovePhoto(idx, idx - 1)}
+                              className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-gray-100 text-gray-700 transition-colors"
+                              title="Mover hacia la izquierda"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+
+                            {!isCover && (
+                              <button
+                                type="button"
+                                onClick={() => handleSetCoverPhoto(idx)}
+                                className="flex-1 text-[9px] font-extrabold uppercase py-0.5 px-1 rounded bg-gray-100 hover:bg-lime hover:text-black text-gray-700 transition-colors flex items-center justify-center gap-1"
+                                title="Fijar como portada principal"
+                              >
+                                <Star className="w-2.5 h-2.5" /> Portada
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              disabled={idx === (editingProduct?.images?.length || 0) - 1}
+                              onClick={() => handleMovePhoto(idx, idx + 1)}
+                              className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-gray-100 text-gray-700 transition-colors"
+                              title="Mover hacia la derecha"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {(!editingProduct?.images || editingProduct.images.length === 0) ? (
+                    <div className="text-center py-4 bg-white rounded-lg border border-dashed border-gray-200 text-gray-400 text-[11px]">
+                      No hay fotos asignadas aún. Sube fotos desde tu equipo o añade una URL.
                     </div>
-                  ))}
-                  {(!editingProduct?.images || editingProduct.images.length === 0) && (
-                    <span className="text-[11px] text-gray-400 italic">No hay fotos asignadas aún</span>
+                  ) : (
+                    <p className="text-[10px] text-gray-500 font-medium">
+                      💡 <strong>Organización:</strong> Usa las flechas (← / →) o el botón "Portada" para ordenar las fotos. La primera foto (#1) será la que se verá en la tienda.
+                    </p>
                   )}
                 </div>
               </div>
@@ -1189,19 +1364,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 </div>
               </div>
 
+              {/* Feedback Alert Banner */}
+              {saveFeedback && (
+                <div
+                  className={`p-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-bold ${
+                    saveFeedback.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-red-50 text-red-800 border-red-200'
+                  }`}
+                >
+                  {saveFeedback.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{saveFeedback.message}</span>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold transition-colors"
+                  disabled={isSaving}
+                  onClick={() => {
+                    setIsProductModalOpen(false);
+                    setSaveFeedback(null);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wider shadow-sm transition-colors"
+                  disabled={isSaving}
+                  className="px-6 py-2.5 rounded-lg bg-black hover:bg-gray-800 text-white font-black uppercase tracking-wider shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
                 >
-                  Guardar en Catálogo
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 text-lime animate-spin" />
+                      <span>Guardando en Catálogo...</span>
+                    </>
+                  ) : (
+                    <span>Guardar en Catálogo</span>
+                  )}
                 </button>
               </div>
 

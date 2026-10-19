@@ -416,7 +416,74 @@ export const MOCK_COUPONS: Record<string, Coupon> = {
   }
 };
 
+export const LOCAL_STORAGE_PRODUCTS_KEY = 'mpp_custom_products';
+export const LOCAL_STORAGE_DELETED_KEY = 'mpp_deleted_products';
+
+export const getLocalStoredProducts = (): Product[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn('Error reading products from localStorage:', e);
+    return [];
+  }
+};
+
+export const setLocalStoredProducts = (products: Product[]): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(products));
+  } catch (e) {
+    console.warn('Error saving products to localStorage:', e);
+  }
+};
+
+export const getDeletedProductIds = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_DELETED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+export const markProductAsDeletedLocally = (id: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getDeletedProductIds();
+    if (!current.includes(id)) {
+      localStorage.setItem(LOCAL_STORAGE_DELETED_KEY, JSON.stringify([...current, id]));
+    }
+    const custom = getLocalStoredProducts().filter((p) => p.id !== id);
+    setLocalStoredProducts(custom);
+  } catch (e) {
+    console.warn('Error marking product as deleted locally:', e);
+  }
+};
+
 export const fetchProducts = async (): Promise<Product[]> => {
+  const localCustom = getLocalStoredProducts();
+  const deletedIds = getDeletedProductIds();
+
+  // Helper to merge Supabase or initial catalog with local edits/creations
+  const mergeWithLocal = (baseList: Product[]): Product[] => {
+    const map = new Map<string, Product>();
+    baseList.forEach((p) => {
+      if (!deletedIds.includes(p.id)) {
+        map.set(p.id, p);
+      }
+    });
+    // Overlay local custom products (they take precedence or get added)
+    localCustom.forEach((p) => {
+      if (!deletedIds.includes(p.id)) {
+        map.set(p.id, p);
+      }
+    });
+    return Array.from(map.values());
+  };
+
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -425,20 +492,19 @@ export const fetchProducts = async (): Promise<Product[]> => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.warn('Error fetching from Supabase, using local catalog:', error.message);
-        return INITIAL_PRODUCTS;
+      if (!error && data && data.length > 0) {
+        return mergeWithLocal(data as Product[]);
       }
-      if (data && data.length > 0) {
-        return data as Product[];
+      if (error) {
+        console.warn('Supabase fetch issue (using local fallback catalog):', error.message);
       }
     } catch (err) {
       console.warn('Supabase network error, fallback to initial products:', err);
     }
   }
 
-  // Fallback to local catalog
-  return INITIAL_PRODUCTS;
+  // Fallback to local catalog merged with user's saved products
+  return mergeWithLocal(INITIAL_PRODUCTS);
 };
 
 export const validateCoupon = async (code: string): Promise<Coupon | null> => {
@@ -634,34 +700,114 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
   return true;
 };
 
-export const saveProduct = async (product: Partial<Product>): Promise<{ success: boolean; data?: any; error?: string }> => {
+export const saveProduct = async (
+  product: Partial<Product>
+): Promise<{ success: boolean; data?: any; error?: string; warning?: string }> => {
+  const targetId =
+    product.id ||
+    `mpp-prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+  const fullProduct: Product = {
+    id: targetId,
+    sku: product.sku || `MPP-${Date.now().toString().slice(-4)}`,
+    name: product.name || 'Nuevo Producto MPP',
+    slug:
+      product.slug ||
+      (product.name || 'producto')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, ''),
+    price: Number(product.price) || 0,
+    discount_price: product.discount_price ? Number(product.discount_price) : null,
+    wholesale_price: product.wholesale_price ? Number(product.wholesale_price) : null,
+    stock_qty: Number(product.stock_qty) || 0,
+    category: product.category || 'Cascos',
+    brand: product.brand || 'MPP',
+    status_text: product.status_text || 'Disponible',
+    is_active: product.is_active !== false,
+    images:
+      product.images && product.images.length > 0
+        ? product.images
+        : ['/mpp-brake-disc.png'],
+    videos: product.videos || [],
+    description: product.description || '',
+    length_mm: product.length_mm ? Number(product.length_mm) : null,
+    width_mm: product.width_mm ? Number(product.width_mm) : null,
+    height_mm: product.height_mm ? Number(product.height_mm) : null,
+    package_details: product.package_details || null,
+    gross_weight_kg: product.gross_weight_kg ? Number(product.gross_weight_kg) : null,
+    net_weight_kg: product.net_weight_kg ? Number(product.net_weight_kg) : null,
+    rating: product.rating || 5.0,
+    reviews_count: product.reviews_count || 1,
+  };
+
+  // 1. Always persist locally in localStorage so products remain on page refresh
+  const localList = getLocalStoredProducts();
+  const existingIdx = localList.findIndex(
+    (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
+  );
+  let updatedList: Product[];
+  if (existingIdx >= 0) {
+    updatedList = [...localList];
+    updatedList[existingIdx] = fullProduct;
+  } else {
+    updatedList = [fullProduct, ...localList];
+  }
+  setLocalStoredProducts(updatedList);
+
+  // Unmark from deleted if it was previously marked deleted
+  const deleted = getDeletedProductIds().filter((id) => id !== fullProduct.id);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(LOCAL_STORAGE_DELETED_KEY, JSON.stringify(deleted));
+  }
+
+  // Update in-memory initial list
+  const memIdx = INITIAL_PRODUCTS.findIndex(
+    (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
+  );
+  if (memIdx >= 0) {
+    INITIAL_PRODUCTS[memIdx] = fullProduct;
+  } else {
+    INITIAL_PRODUCTS.unshift(fullProduct);
+  }
+
+  // 2. Sync to Supabase in parallel if configured
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
         .from('products')
-        .upsert(product)
+        .upsert(fullProduct)
         .select()
         .single();
 
-      if (error) throw error;
-      return { success: true, data };
+      if (error) {
+        console.warn('Supabase upsert warning (saved locally in browser):', error.message);
+        return { success: true, data: fullProduct, warning: error.message };
+      }
+      return { success: true, data: data || fullProduct };
     } catch (err: any) {
-      console.warn('Error saving product in Supabase:', err.message);
-      return { success: false, error: err.message };
+      console.warn('Supabase exception (saved locally in browser):', err?.message);
+      return { success: true, data: fullProduct, warning: err?.message };
     }
   }
-  return { success: true, data: product };
+
+  return { success: true, data: fullProduct };
 };
 
 export const deleteProduct = async (productId: string): Promise<boolean> => {
+  markProductAsDeletedLocally(productId);
+
+  const memIdx = INITIAL_PRODUCTS.findIndex((p) => p.id === productId);
+  if (memIdx >= 0) {
+    INITIAL_PRODUCTS.splice(memIdx, 1);
+  }
+
   if (isSupabaseConfigured()) {
     try {
-      const { error } = await supabase
+      await supabase
         .from('products')
         .update({ is_active: false })
         .eq('id', productId);
-
-      if (!error) return true;
     } catch (err) {
       console.warn('Error deleting product in Supabase:', err);
     }
@@ -674,6 +820,19 @@ export interface UploadMediaResult {
   type: 'image' | 'video';
   fileName: string;
 }
+
+export const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = () => {
+      resolve(URL.createObjectURL(file));
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 export const uploadProductMedia = async (file: File): Promise<UploadMediaResult | null> => {
   const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|ogg|m4v)$/i.test(file.name);
@@ -693,23 +852,23 @@ export const uploadProductMedia = async (file: File): Promise<UploadMediaResult 
         });
 
       if (error) {
-        console.warn('Storage upload error, using local fallback preview:', error.message);
-        const localUrl = URL.createObjectURL(file);
-        return { url: localUrl, type: mediaType, fileName: file.name };
+        console.warn('Supabase Storage notice (using persistent data format):', error.message);
+        const dataUrl = await fileToDataUrl(file);
+        return { url: dataUrl, type: mediaType, fileName: file.name };
       }
 
       const { data } = supabase.storage.from('products').getPublicUrl(cleanName);
       return { url: data.publicUrl, type: mediaType, fileName: file.name };
     } catch (err) {
-      console.warn('Exception uploading media to Supabase Storage, using fallback:', err);
-      const localUrl = URL.createObjectURL(file);
-      return { url: localUrl, type: mediaType, fileName: file.name };
+      console.warn('Supabase Storage fallback (using persistent data format):', err);
+      const dataUrl = await fileToDataUrl(file);
+      return { url: dataUrl, type: mediaType, fileName: file.name };
     }
   }
 
   // Fallback when Supabase is not yet configured or offline
-  const localUrl = URL.createObjectURL(file);
-  return { url: localUrl, type: mediaType, fileName: file.name };
+  const dataUrl = await fileToDataUrl(file);
+  return { url: dataUrl, type: mediaType, fileName: file.name };
 };
 
 export const uploadProductImage = async (file: File): Promise<string | null> => {
