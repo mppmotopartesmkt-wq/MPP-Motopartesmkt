@@ -25,6 +25,7 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedBrand, setSelectedBrand] = useState<string>('All');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Modals state
@@ -39,13 +40,26 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
   const normalizeText = (text: string) =>
     text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-  // Filter products by selected category or special "Sale"
+  // Filter products by selected category or special "Sale" and brand
   const filteredProducts = products.filter((p) => {
-    if (selectedCategory === 'All') return true;
-    if (selectedCategory === 'Sale') return !!p.discount_price;
-    if (selectedCategory === 'Brands') return true;
-    if (!p.category) return false;
-    return normalizeText(p.category) === normalizeText(selectedCategory);
+    // 1. Category match
+    let matchesCat = true;
+    if (selectedCategory === 'All') matchesCat = true;
+    else if (selectedCategory === 'Sale') matchesCat = !!p.discount_price;
+    else if (selectedCategory === 'Brands') matchesCat = true;
+    else if (!p.category) matchesCat = false;
+    else matchesCat = normalizeText(p.category) === normalizeText(selectedCategory);
+
+    // 2. Brand match
+    let matchesBrand = true;
+    if (selectedBrand !== 'All') {
+      const bTerm = selectedBrand.toLowerCase();
+      matchesBrand =
+        (p.brand || '').toLowerCase().includes(bTerm) ||
+        p.name.toLowerCase().includes(bTerm);
+    }
+
+    return matchesCat && matchesBrand;
   });
 
   // Best sellers: take top products
@@ -173,8 +187,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
 
       {/* 8. BRANDS LOGOS ROW */}
       <BrandsBar
-        onSelectBrand={() => {
-          setSelectedCategory('All');
+        onSelectBrand={(brand) => {
+          setSelectedBrand(brand);
           handleScrollToCatalog();
         }}
       />
@@ -189,18 +203,35 @@ export const Home: React.FC<HomeProps> = ({ onNavigateToAdmin }) => {
                 <span className="text-lime-dark font-black tracking-widest text-xs uppercase">
                   CATÁLOGO OFICIAL
                 </span>
-                {selectedCategory !== 'All' && (
+                {(selectedCategory !== 'All' || selectedBrand !== 'All') && (
                   <button
-                    onClick={() => setSelectedCategory('All')}
+                    onClick={() => {
+                      setSelectedCategory('All');
+                      setSelectedBrand('All');
+                    }}
                     className="text-xs text-gray-500 hover:text-black flex items-center gap-1 underline"
                   >
                     <ArrowLeft className="w-3 h-3" /> Ver Todos
                   </button>
                 )}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-gray-900">
-                {getCategoryTitle(selectedCategory)}
-              </h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-gray-900">
+                  {getCategoryTitle(selectedCategory)}
+                </h2>
+                {selectedBrand !== 'All' && (
+                  <span className="inline-flex items-center gap-1.5 bg-black text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                    <span>Marca: <strong className="text-lime">{selectedBrand}</strong></span>
+                    <button
+                      onClick={() => setSelectedBrand('All')}
+                      className="hover:text-red-400 font-black ml-1 text-xs"
+                      title="Quitar filtro de marca"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Category Filter Pills */}
