@@ -856,7 +856,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                         category: 'Tanques',
                         brand: 'MPP',
                         status_text: 'Disponible',
-                        images: ['/mpp-brake-disc.png'],
+                        images: ['/categories/tanques.png'],
                         videos: [],
                         is_active: true,
                       });

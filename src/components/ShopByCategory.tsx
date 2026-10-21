@@ -15,62 +15,62 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = ({ onSelectCategory
     {
       name: 'CASCOS',
       categoryKey: 'Cascos',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/cascos.png',
     },
     {
       name: 'ACCESORIOS',
       categoryKey: 'Accesorios',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/accesorios.png',
     },
     {
       name: 'REPUESTOS',
       categoryKey: 'Repuestos',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/repuestos.png',
     },
     {
       name: 'LLANTAS',
       categoryKey: 'Llantas',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/llantas.png',
     },
     {
       name: 'BATERÍAS',
       categoryKey: 'Baterías',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/baterias.png',
     },
     {
       name: 'TANQUES',
       categoryKey: 'Tanques',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/tanques.png',
     },
     {
       name: 'FAROLAS',
       categoryKey: 'Farolas',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/farolas.png',
     },
     {
       name: 'DEFENSAS',
       categoryKey: 'Defensas',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/defensas.png',
     },
     {
       name: 'ESPEJOS',
       categoryKey: 'Espejos',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/espejos.png',
     },
     {
       name: 'CARENAJES',
       categoryKey: 'Carenajes',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/carenajes.png',
     },
     {
       name: 'FRENOS',
       categoryKey: 'Frenos',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/frenos.png',
     },
     {
       name: 'MANTENIMIENTO',
       categoryKey: 'Mantenimiento',
-      imageUrl: '/mpp-brake-disc.png',
+      imageUrl: '/categories/mantenimiento.png',
     },
   ];
 

@@ -1,6 +1,26 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import { Product, Coupon, CheckoutResult } from '../types';
 
+export const getDefaultCategoryPhoto = (category?: string): string => {
+  const norm = (category || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  if (norm.includes('casco')) return '/categories/cascos.png';
+  if (norm.includes('accesorio')) return '/categories/accesorios.png';
+  if (norm.includes('repuesto') || norm.includes('arrastre')) return '/categories/repuestos.png';
+  if (norm.includes('llanta')) return '/categories/llantas.png';
+  if (norm.includes('bater')) return '/categories/baterias.png';
+  if (norm.includes('tanque')) return '/categories/tanques.png';
+  if (norm.includes('farola')) return '/categories/farolas.png';
+  if (norm.includes('defensa')) return '/categories/defensas.png';
+  if (norm.includes('espejo')) return '/categories/espejos.png';
+  if (norm.includes('carenaje')) return '/categories/carenajes.png';
+  if (norm.includes('freno')) return '/categories/frenos.png';
+  if (norm.includes('mantenimiento') || norm.includes('aceite') || norm.includes('lube')) return '/categories/mantenimiento.png';
+  return '/categories/repuestos.png';
+};
+
 // Initial local catalog matching the exact real inventory CSV
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -24,7 +44,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.044928,
     gross_weight_kg: 4.20,
     net_weight_kg: 3.60,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/tanques.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -50,7 +70,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.027360,
     gross_weight_kg: 2.10,
     net_weight_kg: 1.70,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/farolas.png'],
     videos: [],
     is_active: true,
     status_text: 'Por agotarse'
@@ -76,7 +96,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.022968,
     gross_weight_kg: 1.85,
     net_weight_kg: 1.50,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/farolas.png'],
     videos: [],
     is_active: true,
     status_text: 'Por agotarse'
@@ -102,7 +122,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.016464,
     gross_weight_kg: 2.90,
     net_weight_kg: 2.60,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/defensas.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -128,7 +148,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.023040,
     gross_weight_kg: 3.40,
     net_weight_kg: 3.10,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/defensas.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -154,7 +174,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.003136,
     gross_weight_kg: 0.75,
     net_weight_kg: 0.60,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/espejos.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -180,7 +200,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.002535,
     gross_weight_kg: 0.68,
     net_weight_kg: 0.55,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/espejos.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -206,7 +226,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.002400,
     gross_weight_kg: 0.65,
     net_weight_kg: 0.52,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/espejos.png'],
     videos: [],
     is_active: true,
     status_text: 'Por agotarse'
@@ -232,13 +252,13 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.047880,
     gross_weight_kg: 2.20,
     net_weight_kg: 1.80,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/carenajes.png'],
     videos: [],
     is_active: true,
     status_text: 'Por agotarse'
   },
   {
-    id: 'b0000010-0000-0000-0000-000000000010',
+    id: 'b0000010-0000-0000-0000-0000000010',
     sku: 'FAC2008N',
     name: 'Carenaje Completo Pulsar 180 / 220',
     slug: 'carenaje-completo-pulsar-180-fac2008n',
@@ -258,7 +278,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.057600,
     gross_weight_kg: 2.60,
     net_weight_kg: 2.10,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/carenajes.png'],
     videos: [],
     is_active: true,
     status_text: 'Por agotarse'
@@ -284,7 +304,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.026244,
     gross_weight_kg: 1.80,
     net_weight_kg: 1.45,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/cascos.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -310,7 +330,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.001200,
     gross_weight_kg: 0.35,
     net_weight_kg: 0.28,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/accesorios.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -336,7 +356,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.003380,
     gross_weight_kg: 2.40,
     net_weight_kg: 2.10,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/repuestos.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -362,7 +382,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.039600,
     gross_weight_kg: 4.60,
     net_weight_kg: 4.30,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/llantas.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -388,7 +408,59 @@ export const INITIAL_PRODUCTS: Product[] = [
     cbm_pc: 0.001227,
     gross_weight_kg: 2.30,
     net_weight_kg: 2.15,
-    images: ['/mpp-brake-disc.png'],
+    images: ['/categories/baterias.png'],
+    videos: [],
+    is_active: true,
+    status_text: 'Disponible'
+  },
+  {
+    id: 'b0000016-0000-0000-0000-000000000016',
+    sku: 'FRN8001N',
+    name: 'Disco de Freno Delantero Ventilado Wave Racing',
+    slug: 'disco-freno-delantero-ventilado-wave-racing',
+    price: 165000,
+    discount_price: 139000,
+    wholesale_price: 110000,
+    stock_qty: 35,
+    category: 'Frenos',
+    brand: 'MPP Brakes',
+    rating: 5.0,
+    reviews_count: 142,
+    description: 'Disco de freno delantero con diseño lobulado Wave en acero inoxidable martensítico 420. Alta disipación térmica, resistencia a la fatiga en frenadas bruscas y máximo agarre con pastillas sinterizadas.',
+    length_mm: 300,
+    width_mm: 300,
+    height_mm: 20,
+    package_details: 'Caja rígida sellada con film protector anticorrosión',
+    cbm_pc: 0.001800,
+    gross_weight_kg: 1.15,
+    net_weight_kg: 0.98,
+    images: ['/categories/frenos.png'],
+    videos: [],
+    is_active: true,
+    status_text: 'Disponible'
+  },
+  {
+    id: 'b0000017-0000-0000-0000-000000000017',
+    sku: 'MNT9001N',
+    name: 'Kit Mantenimiento: Aceite Sintético 4T 10W-40 + Lubricante Cadena',
+    slug: 'kit-mantenimiento-aceite-sintetico-4t-lubricante-cadena',
+    price: 95000,
+    discount_price: 79900,
+    wholesale_price: 65000,
+    stock_qty: 40,
+    category: 'Mantenimiento',
+    brand: 'MPP Lube Pro',
+    rating: 5.0,
+    reviews_count: 98,
+    description: 'Combo esencial de mantenimiento preventivo. Incluye 1 litro de aceite 100% sintético 4T 10W-40 API SN / JASO MA2 y aerosol de grasa blanca de litio de alta adherencia para cadenas de competición.',
+    length_mm: 240,
+    width_mm: 160,
+    height_mm: 120,
+    package_details: 'Caja termoencogible con sellos de seguridad anti-fuga',
+    cbm_pc: 0.004608,
+    gross_weight_kg: 1.65,
+    net_weight_kg: 1.45,
+    images: ['/categories/mantenimiento.png'],
     videos: [],
     is_active: true,
     status_text: 'Disponible'
@@ -481,7 +553,16 @@ export const fetchProducts = async (): Promise<Product[]> => {
         map.set(p.id, p);
       }
     });
-    return Array.from(map.values());
+    // Ensure all products display their real category photo if they were using the generic brake disc placeholder
+    return Array.from(map.values()).map((p) => {
+      if (!p.images || p.images.length === 0 || p.images[0] === '/mpp-brake-disc.png') {
+        return {
+          ...p,
+          images: [getDefaultCategoryPhoto(p.category)],
+        };
+      }
+      return p;
+    });
   };
 
   if (isSupabaseConfigured()) {
