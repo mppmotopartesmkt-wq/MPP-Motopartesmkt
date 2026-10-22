@@ -102,7 +102,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
 
   // New coupon state
   const [coupons, setCoupons] = useState([
-    { code: 'MPP10', discount_type: 'percentage', discount_value: 10, current_uses: 24, max_uses: 1000, is_active: true },
+    { code: 'MPR10', discount_type: 'percentage', discount_value: 10, current_uses: 24, max_uses: 1000, is_active: true },
     { code: 'RIDE10', discount_type: 'percentage', discount_value: 10, current_uses: 52, max_uses: 1000, is_active: true },
     { code: 'LIME20', discount_type: 'percentage', discount_value: 20, current_uses: 8, max_uses: 500, is_active: true },
   ]);
@@ -135,7 +135,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   // Helper: detect if product is missing a real photo
   const isMissingRealPhoto = (p: Product) => {
     if (!p.images || p.images.length === 0) return true;
-    return p.images[0] === '/mpp-brake-disc.png';
+    return p.images[0] === '/mpr-brake-disc.png' || p.images[0] === '/mpp-brake-disc.png';
   };
 
   // Dynamic categories and brands
@@ -200,7 +200,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
 
       // 3. Brand filter
       if (selectedBrand !== 'All') {
-        const brand = p.brand?.trim() || 'MPP';
+        const brand = p.brand?.trim() || 'MPR';
         if (brand.toLowerCase() !== selectedBrand.toLowerCase()) {
           return false;
         }
@@ -307,7 +307,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         escapeCSV(p.sku),
         escapeCSV(p.name),
         escapeCSV(p.category || 'General'),
-        escapeCSV(p.brand || 'MPP'),
+        escapeCSV(p.brand || 'MPR'),
         p.price,
         p.discount_price || '',
         p.wholesale_price || '',
@@ -325,7 +325,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `inventario_mpp_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `inventario_mpr_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -440,7 +440,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
       status_text: editingProduct.status_text || 'Disponible',
       images: editingProduct.images && editingProduct.images.length > 0
         ? editingProduct.images
-        : ['/mpp-brake-disc.png'],
+        : ['/mpr-brake-disc.png'],
       videos: editingProduct.videos || [],
     };
 
@@ -525,8 +525,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           
           <div className="flex items-center gap-4">
             <img
-              src="/mpp-logo-dark.png"
-              alt="MPP"
+              src="/mpr-logo-dark.png"
+              alt="MPR"
               className="h-10 sm:h-12 w-auto object-contain"
             />
             <div>
@@ -848,13 +848,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   <button
                     onClick={() => {
                       setEditingProduct({
-                        sku: `MPP-${Date.now().toString().slice(-4)}`,
+                        sku: `MPR-${Date.now().toString().slice(-4)}`,
                         name: '',
                         price: 150000,
                         wholesale_price: 120000,
                         stock_qty: 20,
                         category: 'Tanques',
-                        brand: 'MPP',
+                        brand: 'MPR',
                         status_text: 'Disponible',
                         images: ['/categories/tanques.png'],
                         videos: [],
@@ -1004,7 +1004,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                                   </span>
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className="text-[10px] text-gray-500 font-medium">
-                                      {p.brand || 'MPP'}
+                                      {p.brand || 'MPR'}
                                     </span>
                                     {missingPhoto && (
                                       <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
@@ -1162,7 +1162,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                         <td className="py-3.5 px-4">
                           <div>
                             <span className="font-bold text-gray-900 block">
-                              {ord.shipping_address?.full_name || 'Cliente MPP'}
+                              {ord.shipping_address?.full_name || 'Cliente MPR'}
                             </span>
                             <span className="text-[11px] text-gray-500">
                               {ord.shipping_address?.city || 'Colombia'} • {ord.shipping_address?.address || ''}
@@ -1232,7 +1232,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               <div className="flex flex-wrap gap-3">
                 <input
                   type="text"
-                  placeholder="Código (ej. MPP15)"
+                  placeholder="Código (ej. MPR15)"
                   value={newCouponCode}
                   onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
                   className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 placeholder-gray-400 font-mono font-bold focus:outline-none focus:border-black focus:bg-white uppercase"
@@ -1549,7 +1549,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     type="text"
                     value={editingProduct?.brand || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, brand: e.target.value })}
-                    placeholder="Duvox, Growsun, MPP..."
+                    placeholder="Duvox, Growsun, MPR..."
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium"
                   />
                 </div>

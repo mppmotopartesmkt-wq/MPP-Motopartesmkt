@@ -50,8 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (role === 'admin') {
       setProfile({
         id: 'a9999999-9999-9999-9999-999999999999',
-        full_name: 'Admin MPP Repuestos',
-        email: 'admin@mpprepuestos.com',
+        full_name: 'Admin MPR Repuestos',
+        email: 'admin@mprrepuestos.com',
         role: 'admin',
         city: 'Medellín',
       });

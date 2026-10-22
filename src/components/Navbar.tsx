@@ -36,14 +36,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* LOGO MPP */}
+          {/* LOGO MPR */}
           <div
             className="flex items-center gap-3 cursor-pointer group py-2"
             onClick={() => onSelectCategory('All')}
           >
             <img
-              src="/mpp-logo-dark.png"
-              alt="MPP Repuestos para Motos"
+              src="/mpr-logo-dark.png"
+              alt="MPR Repuestos para Motos"
               className="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </div>
@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onNavigateToAdmin}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-neutral-800 text-white font-black text-xs uppercase tracking-wider transition-all shadow-xs"
-                title="Panel de Administración MPP"
+                title="Panel de Administración MPR"
               >
                 <Shield className="w-3.5 h-3.5 text-lime" />
                 <span>Panel Admin</span>

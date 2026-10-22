@@ -57,7 +57,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         <div className="max-h-96 overflow-y-auto p-4 space-y-2">
           {searchTerm.trim() === '' ? (
             <div className="text-center py-12 text-gray-400 text-xs font-medium">
-              Escribe algo para buscar en todo el catálogo de repuestos MPP...
+              Escribe algo para buscar en todo el catálogo de repuestos MPR...
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-gray-500 text-xs">

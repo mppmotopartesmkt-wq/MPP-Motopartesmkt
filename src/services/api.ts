@@ -111,7 +111,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 120000,
     stock_qty: 25,
     category: 'Defensas',
-    brand: 'Nacional / MPP',
+    brand: 'Nacional / MPR',
     rating: 5.0,
     reviews_count: 115,
     description: 'Defensas slider planas de protección lateral para Yamaha NMAX (versiones V1, V2 y V3). Estructura en tubería de acero al carbono de alta resistencia con punteras deslizadoras en polímero técnico que absorben el impacto y protegen carenajes.',
@@ -137,7 +137,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 120000,
     stock_qty: 25,
     category: 'Defensas',
-    brand: 'Nacional / MPP',
+    brand: 'Nacional / MPR',
     rating: 5.0,
     reviews_count: 88,
     description: 'Defensas tubulares largas de máxima cobertura para scooter Yamaha NMAX V1, V2 y V3. Brindan protección integral para posapiés, piso y carenaje inferior en caídas y tráfico denso.',
@@ -215,7 +215,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 40000,
     stock_qty: 30,
     category: 'Espejos',
-    brand: 'Nacional / MPP',
+    brand: 'Nacional / MPR',
     rating: 4.8,
     reviews_count: 77,
     description: 'Espejos retrovisores redondos de alta visibilidad para Yamaha XT 660, XTZ y motocicletas todo terreno. Mecanismo de articulación giratorio resistente a ramas y caídas en trocha.',
@@ -286,14 +286,14 @@ export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'b0000011-0000-0000-0000-000000000011',
     sku: 'CSC3001N',
-    name: 'Casco Integral MPP Racing Pro Certificado ECE/DOT',
-    slug: 'casco-integral-mpp-racing-pro',
+    name: 'Casco Integral MPR Racing Pro Certificado ECE/DOT',
+    slug: 'casco-integral-mpr-racing-pro',
     price: 320000,
     discount_price: 285000,
     wholesale_price: 250000,
     stock_qty: 30,
     category: 'Cascos',
-    brand: 'MPP Helmets',
+    brand: 'MPR Helmets',
     rating: 5.0,
     reviews_count: 114,
     description: 'Casco integral de alta gama con coraza aerodinámica en policarbonato avanzado, visor de liberación rápida con tratamiento anti-rayaduras y preparación Pinlock. Homologación internacional DOT y ECE 22.06.',
@@ -319,7 +319,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 55000,
     stock_qty: 45,
     category: 'Accesorios',
-    brand: 'MPP Moto',
+    brand: 'MPR Moto',
     rating: 4.9,
     reviews_count: 67,
     description: 'Soporte universal para manubrio y espejo retrovisor en aleación de aluminio CNC con amortiguadores de vibración para proteger cámaras ópticas de smartphones. Incluye puerto de carga rápida USB impermeable.',
@@ -345,7 +345,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 125000,
     stock_qty: 28,
     category: 'Repuestos',
-    brand: 'MPP Parts',
+    brand: 'MPR Parts',
     rating: 5.0,
     reviews_count: 95,
     description: 'Kit de arrastre de alto rendimiento con corona dentada en acero al carbono 1045 tratado térmicamente, piñón de ataque templado y cadena dorada reforzada con o-rings de sellado anti-fricción.',
@@ -371,7 +371,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 175000,
     stock_qty: 22,
     category: 'Llantas',
-    brand: 'MPP Grip',
+    brand: 'MPR Grip',
     rating: 4.8,
     reviews_count: 73,
     description: 'Llanta sellomátic de tecnología radial con compuesto de sílice reforzado para máximo agarre en pavimento seco y húmedo, así como tracción confiable en vías destapadas.',
@@ -397,7 +397,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 95000,
     stock_qty: 35,
     category: 'Baterías',
-    brand: 'MPP Power',
+    brand: 'MPR Power',
     rating: 5.0,
     reviews_count: 88,
     description: 'Batería sellada de electrolito gelificado libre de mantenimiento con alto poder de arranque en frío (CCA). Resistente a vibraciones intensas y diseñada para una vida útil extendida.',
@@ -423,7 +423,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 110000,
     stock_qty: 35,
     category: 'Frenos',
-    brand: 'MPP Brakes',
+    brand: 'MPR Brakes',
     rating: 5.0,
     reviews_count: 142,
     description: 'Disco de freno delantero con diseño lobulado Wave en acero inoxidable martensítico 420. Alta disipación térmica, resistencia a la fatiga en frenadas bruscas y máximo agarre con pastillas sinterizadas.',
@@ -449,7 +449,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     wholesale_price: 65000,
     stock_qty: 40,
     category: 'Mantenimiento',
-    brand: 'MPP Lube Pro',
+    brand: 'MPR Lube Pro',
     rating: 5.0,
     reviews_count: 98,
     description: 'Combo esencial de mantenimiento preventivo. Incluye 1 litro de aceite 100% sintético 4T 10W-40 API SN / JASO MA2 y aerosol de grasa blanca de litio de alta adherencia para cadenas de competición.',
@@ -488,13 +488,22 @@ export const MOCK_COUPONS: Record<string, Coupon> = {
   }
 };
 
-export const LOCAL_STORAGE_PRODUCTS_KEY = 'mpp_custom_products';
-export const LOCAL_STORAGE_DELETED_KEY = 'mpp_deleted_products';
+export const LOCAL_STORAGE_PRODUCTS_KEY = 'mpr_custom_products';
+export const LOCAL_STORAGE_DELETED_KEY = 'mpr_deleted_products';
 
 export const getLocalStoredProducts = (): Product[] => {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
+    let raw = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
+    // Backward compatibility: fallback to legacy key if exists
+    if (!raw) {
+      const legacyRaw = localStorage.getItem('mpp_custom_products');
+      if (legacyRaw) {
+        raw = legacyRaw;
+        // Auto-migrate to new MPR key
+        localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, legacyRaw);
+      }
+    }
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     console.warn('Error reading products from localStorage:', e);
@@ -514,7 +523,14 @@ export const setLocalStoredProducts = (products: Product[]): void => {
 export const getDeletedProductIds = (): string[] => {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_DELETED_KEY);
+    let raw = localStorage.getItem(LOCAL_STORAGE_DELETED_KEY);
+    if (!raw) {
+      const legacyRaw = localStorage.getItem('mpp_deleted_products');
+      if (legacyRaw) {
+        raw = legacyRaw;
+        localStorage.setItem(LOCAL_STORAGE_DELETED_KEY, legacyRaw);
+      }
+    }
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     return [];
@@ -555,7 +571,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
     });
     // Ensure all products display their real category photo if they were using the generic brake disc placeholder
     return Array.from(map.values()).map((p) => {
-      if (!p.images || p.images.length === 0 || p.images[0] === '/mpp-brake-disc.png') {
+      if (!p.images || p.images.length === 0 || p.images[0] === '/mpr-brake-disc.png' || p.images[0] === '/mpp-brake-disc.png') {
         return {
           ...p,
           images: [getDefaultCategoryPhoto(p.category)],
@@ -668,7 +684,7 @@ export const processCheckout = async (
   const totalAmount = Math.max(0, subtotal - discountApplied);
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const orderNumber = `MPP-${dateStr}-${randomPart}`;
+  const orderNumber = `MPR-${dateStr}-${randomPart}`;
 
   return {
     success: true,
@@ -708,7 +724,7 @@ export const fetchOrders = async (): Promise<any[]> => {
   return [
     {
       id: 'ord-001',
-      order_number: 'MPP-20261008-883A',
+      order_number: 'MPR-20261008-883A',
       profile_id: 'd1111111-1111-1111-1111-111111111111',
       status: 'shipped',
       subtotal: 2199000,
@@ -736,7 +752,7 @@ export const fetchOrders = async (): Promise<any[]> => {
     },
     {
       id: 'ord-002',
-      order_number: 'MPP-20261008-992B',
+      order_number: 'MPR-20261008-992B',
       profile_id: 'd1111111-1111-1111-1111-111111111111',
       status: 'pending',
       subtotal: 1299000,
@@ -786,12 +802,12 @@ export const saveProduct = async (
 ): Promise<{ success: boolean; data?: any; error?: string; warning?: string }> => {
   const targetId =
     product.id ||
-    `mpp-prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    `mpr-prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
   const fullProduct: Product = {
     id: targetId,
-    sku: product.sku || `MPP-${Date.now().toString().slice(-4)}`,
-    name: product.name || 'Nuevo Producto MPP',
+    sku: product.sku || `MPR-${Date.now().toString().slice(-4)}`,
+    name: product.name || 'Nuevo Producto MPR',
     slug:
       product.slug ||
       (product.name || 'producto')
@@ -803,13 +819,13 @@ export const saveProduct = async (
     wholesale_price: product.wholesale_price ? Number(product.wholesale_price) : null,
     stock_qty: Number(product.stock_qty) || 0,
     category: product.category || 'Cascos',
-    brand: product.brand || 'MPP',
+    brand: product.brand || 'MPR',
     status_text: product.status_text || 'Disponible',
     is_active: product.is_active !== false,
     images:
       product.images && product.images.length > 0
         ? product.images
-        : ['/mpp-brake-disc.png'],
+        : ['/mpr-brake-disc.png'],
     videos: product.videos || [],
     description: product.description || '',
     length_mm: product.length_mm ? Number(product.length_mm) : null,

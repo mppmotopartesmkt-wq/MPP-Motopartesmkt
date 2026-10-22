@@ -25,8 +25,8 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
           <div className="lg:col-span-1 space-y-4">
             <div className="flex items-center">
               <img
-                src="/mpp-logo-dark.png"
-                alt="MPP Repuestos para Motos"
+                src="/mpr-logo-dark.png"
+                alt="MPR Repuestos para Motos"
                 className="h-14 sm:h-16 w-auto object-contain"
               />
             </div>
@@ -195,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
       <div className="border-t border-gray-200 py-6 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-gray-500 text-[11px] text-center sm:text-left">
-            © 2026 MPP Repuestos para Motos. Todos los derechos reservados.
+            © 2026 MPR Repuestos para Motos. Todos los derechos reservados.
           </p>
 
           {/* Payment Badges */}

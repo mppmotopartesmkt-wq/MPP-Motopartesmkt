@@ -120,7 +120,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       if (img) mediaList.push({ type: 'image', url: img });
     });
   } else {
-    mediaList.push({ type: 'image', url: '/mpp-brake-disc.png' });
+    mediaList.push({ type: 'image', url: '/mpr-brake-disc.png' });
   }
 
   if (product.videos && product.videos.length > 0) {
@@ -135,7 +135,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       ? [mediaList[0], mediaList[0], mediaList[0], mediaList[0]]
       : mediaList;
 
-  const currentMedia = galleryItems[selectedImage] || galleryItems[0] || { type: 'image', url: '/mpp-brake-disc.png' };
+  const currentMedia = galleryItems[selectedImage] || galleryItems[0] || { type: 'image', url: '/mpr-brake-disc.png' };
 
   // Related products (exclude current product)
   const relatedProducts = allProducts
@@ -306,7 +306,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* Floating badge inside image card */}
                   <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
                     <span className="bg-white/90 backdrop-blur-sm text-black font-extrabold text-[10px] sm:text-xs uppercase px-3 py-1 rounded-full border border-gray-200 shadow-sm">
-                      {product.brand || 'MPP PERFORMANCE'}
+                      {product.brand || 'MPR PERFORMANCE'}
                     </span>
                     {product.discount_price && (
                       <span className="bg-black text-white font-extrabold text-[10px] sm:text-xs uppercase px-2.5 py-1 rounded-full shadow-sm">
@@ -410,7 +410,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-xs text-gray-700 mb-6 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Marca:</span>
-                <span className="font-bold text-black">{product.brand || 'MPP Racing'}</span>
+                <span className="font-bold text-black">{product.brand || 'MPR Racing'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Código SKU:</span>
@@ -643,7 +643,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="md:col-span-5 bg-gradient-to-br from-neutral-900 to-black text-white p-6 sm:p-8 rounded-2xl shadow-lg relative overflow-hidden">
                 <div className="relative z-10">
                   <span className="text-[10px] font-black uppercase tracking-widest text-lime mb-2 block">
-                    MPP TECH SPEC
+                    MPR TECH SPEC
                   </span>
                   <h4 className="text-xl font-black tracking-tight mb-3">
                     CONTROL & SEGURIDAD TOTAL
@@ -759,7 +759,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 También te puede interesar
               </h3>
               <span className="text-xs font-black uppercase text-gray-500 tracking-wider">
-                Catálogo MPP Repuestos
+                Catálogo MPR Repuestos
               </span>
             </div>
 
@@ -777,7 +777,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 >
                   <div className="w-full aspect-square bg-[#f8f9fa] rounded-lg p-4 flex items-center justify-center mb-3 relative overflow-hidden">
                     <img
-                      src={relProduct.images?.[0] || '/mpp-brake-disc.png'}
+                      src={relProduct.images?.[0] || '/mpr-brake-disc.png'}
                       alt={relProduct.name}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform filter drop-shadow-sm"
                     />
@@ -785,7 +785,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                   <div>
                     <span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">
-                      {relProduct.brand || 'MPP'}
+                      {relProduct.brand || 'MPR'}
                     </span>
                     <h4 className="text-xs sm:text-sm font-extrabold text-black uppercase line-clamp-1 group-hover:text-neutral-600 transition-colors">
                       {relProduct.name}

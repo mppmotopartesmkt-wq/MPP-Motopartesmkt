@@ -158,12 +158,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           {/* Center: Branding */}
           <div className="hidden sm:flex items-center gap-2.5">
             <img
-              src="/mpp-logo.png"
-              alt="MPP"
+              src="/mpr-logo-dark.png"
+              alt="MPR"
               className="h-8 w-auto object-contain"
             />
             <span className="text-xs font-black uppercase tracking-wider text-black">
-              MPP MOTOPARTES • CHECKOUT SEGURO
+              MPR MOTOPARTES • CHECKOUT SEGURO
             </span>
           </div>
 
@@ -487,7 +487,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                       <div key={item.product.id} className="pt-3 first:pt-0 flex items-center gap-3">
                         <div className="w-14 h-14 bg-white border border-gray-200 rounded-xl p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
                           <img
-                            src={item.product.images?.[0] || '/mpp-brake-disc.png'}
+                            src={item.product.images?.[0] || '/mpr-brake-disc.png'}
                             alt={item.product.name}
                             className="w-full h-full object-contain"
                           />

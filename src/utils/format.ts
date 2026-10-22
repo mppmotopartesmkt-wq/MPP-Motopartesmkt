@@ -19,5 +19,5 @@ export const formatCurrency = (amount: number, currency: 'COP' | 'USD' = 'COP'):
 export const generateOrderNumber = (): string => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `MPP-${dateStr}-${randomPart}`;
+  return `MPR-${dateStr}-${randomPart}`;
 };
