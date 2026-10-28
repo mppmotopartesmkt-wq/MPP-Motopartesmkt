@@ -1183,15 +1183,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                              ord.payment_status === 'paid_in_full'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}
-                          >
-                            {ord.payment_status === 'paid_in_full' ? 'Pagado' : 'Pendiente'}
-                          </span>
+                          <div className="flex flex-col gap-1 items-start">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                                ord.payment_status === 'paid_in_full'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}
+                            >
+                              {ord.payment_status === 'paid_in_full' ? 'Pagado' : 'Pendiente'}
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase">
+                              {ord.shipping_address?.payment_method === 'bold'
+                                ? 'Bold Colombia'
+                                : (ord.shipping_address?.payment_method || 'En Línea')}
+                            </span>
+                          </div>
                         </td>
 
                         <td className="py-3.5 px-4">

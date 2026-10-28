@@ -5,7 +5,6 @@ import {
   CheckCircle,
   CreditCard,
   Building,
-  Smartphone,
   AlertTriangle,
   ArrowRight,
   Package,
@@ -13,10 +12,12 @@ import {
   Lock,
   Truck,
   FileText,
+  Zap,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { processCheckout } from '../services/api';
+import { openBoldCheckout, loadBoldScript } from '../services/bold';
 import { formatCurrency } from '../utils/format';
 import { DocumentType, PaymentMethod, CheckoutResult } from '../types';
 
@@ -36,11 +37,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   const [phone, setPhone] = useState(profile?.phone || '');
   const [address, setAddress] = useState(profile?.address || '');
   const [city, setCity] = useState(profile?.city || 'Bogotá');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pse');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bold');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] = useState<CheckoutResult | null>(null);
+  const [isBoldOpening, setIsBoldOpening] = useState(false);
+
+  // Pre-cargar el script oficial de Bold en segundo plano cuando el modal se abre
+  useEffect(() => {
+    if (isOpen) {
+      loadBoldScript().catch((err) => console.warn('Preload bold script warning:', err));
+    }
+  }, [isOpen]);
 
   // Lock background scroll when checkout is open
   useEffect(() => {
@@ -111,6 +120,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
       if (result.success) {
         setCompletedOrder(result);
         clearCart();
+
+        // Si el método seleccionado es Bold, abrir el checkout embebido o redirigir
+        if (paymentMethod === 'bold') {
+          setIsBoldOpening(true);
+          try {
+            await openBoldCheckout({
+              orderId: result.order_number,
+              amount: finalTotal,
+              description: `MPR Repuestos - Orden ${result.order_number}`,
+              customerEmail: email,
+              customerName: fullName,
+              renderMode: 'embedded',
+            });
+          } catch (boldErr: any) {
+            console.error('Error lanzando Bold:', boldErr);
+          } finally {
+            setIsBoldOpening(false);
+          }
+        }
       } else {
         setErrorMessage(result.message || 'Error procesando el pedido.');
       }
@@ -118,6 +146,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
       setErrorMessage(err.message || 'Error al conectar con la pasarela de pagos.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleReopenBold = async () => {
+    if (!completedOrder) return;
+    setIsBoldOpening(true);
+    try {
+      await openBoldCheckout({
+        orderId: completedOrder.order_number,
+        amount: completedOrder.total_amount,
+        description: `MPR Repuestos - Orden ${completedOrder.order_number}`,
+        customerEmail: email,
+        customerName: fullName,
+        renderMode: 'embedded',
+      });
+    } finally {
+      setIsBoldOpening(false);
     }
   };
 
@@ -227,13 +272,43 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                 <span className="text-gray-500 font-medium">Método de Pago Seleccionado:</span>
-                <span className="text-black uppercase font-extrabold">{paymentMethod}</span>
+                <span className="text-black uppercase font-extrabold">
+                  {paymentMethod === 'bold' ? 'Bold Colombia (En Línea)' : paymentMethod}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-2 text-lg font-black text-black">
                 <span>Total Facturado:</span>
                 <span className="text-black">{formatCurrency(completedOrder.total_amount)}</span>
               </div>
             </div>
+
+            {/* Bold Colombia Payment Reopen Notice */}
+            {paymentMethod === 'bold' && (
+              <div className="bg-gradient-to-r from-emerald-50 to-lime/20 border border-emerald-200 rounded-2xl p-5 text-left flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded">
+                      Pasarela Bold
+                    </span>
+                    <span className="text-xs font-black text-gray-900">
+                      Transacción en Proceso con Bold Colombia
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Aceptamos PSE, Nequi, Daviplata, Tarjetas y Botón Bancolombia. Si necesitas reabrir la ventana de pago:
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleReopenBold}
+                  disabled={isBoldOpening}
+                  className="bg-black hover:bg-neutral-800 text-white font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider shrink-0 flex items-center gap-2 shadow-sm transition-all"
+                >
+                  <Zap className="w-4 h-4 text-lime" />
+                  <span>{isBoldOpening ? 'Iniciando Bold...' : 'Pagar con Bold'}</span>
+                </button>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
@@ -411,28 +486,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   <div className="space-y-3">
                     {[
                       {
-                        id: 'pse',
-                        label: 'PSE / Transferencia En Línea',
-                        sub: 'Débito desde cualquier cuenta de ahorro o corriente en Colombia (Bancolombia, Nequi, Davivienda, etc.)',
-                        icon: Smartphone,
-                      },
-                      {
-                        id: 'wompi',
-                        label: 'Wompi / Tarjeta Débito y Crédito',
-                        sub: 'Visa, Mastercard, American Express — Pago procesado con seguridad Bancolombia Wompi',
-                        icon: CreditCard,
+                        id: 'bold',
+                        label: 'Bold Colombia — Pasarela Oficial en Línea',
+                        isRecommended: true,
+                        sub: 'Paga al instante y con seguridad certificada. Acepta PSE (todos los bancos de Colombia), Tarjetas Débito y Crédito (Visa, Mastercard, Amex), Nequi, Daviplata y Botón Bancolombia.',
+                        icon: Zap,
+                        badges: ['PSE', 'Visa / Mastercard', 'Nequi', 'Bancolombia'],
                       },
                       {
                         id: 'transfer',
-                        label: 'Bancolombia Transferencia Directa / QR',
-                        sub: 'Transferencia bancaria directa con confirmación vía comprobante WhatsApp',
+                        label: 'Bancolombia Transferencia Directa / QR WhatsApp',
+                        isRecommended: false,
+                        sub: 'Transferencia directa a cuenta corriente/ahorros o QR con confirmación de comprobante vía WhatsApp.',
                         icon: Building,
-                      },
-                      {
-                        id: 'paypal',
-                        label: 'PayPal (Pagos Internacionales en USD)',
-                        sub: 'Para compras fuera de Colombia con protección al comprador',
-                        icon: CreditCard,
+                        badges: ['Transferencia Manual', 'WhatsApp'],
                       },
                     ].map((m) => {
                       const Icon = m.icon;
@@ -440,9 +507,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                       return (
                         <label
                           key={m.id}
-                          className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
                             isSelected
-                              ? 'bg-gray-50 border-black shadow-sm'
+                              ? 'bg-neutral-50/90 border-black shadow-md ring-1 ring-black/5'
                               : 'bg-white border-gray-200 text-gray-700 hover:border-gray-400'
                           }`}
                         >
@@ -451,14 +518,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                             name="paymentMethod"
                             checked={isSelected}
                             onChange={() => setPaymentMethod(m.id as PaymentMethod)}
-                            className="mt-1 text-black focus:ring-black accent-black w-4 h-4"
+                            className="mt-1 text-black focus:ring-black accent-black w-4 h-4 shrink-0"
                           />
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4 text-black" />
-                              <span className="text-sm font-extrabold text-black">{m.label}</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="w-6 h-6 rounded-md bg-black text-lime flex items-center justify-center shrink-0">
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <span className="text-sm font-black text-black">{m.label}</span>
+                              {m.isRecommended && (
+                                <span className="bg-lime text-black font-black text-[10px] uppercase px-2 py-0.5 rounded-full border border-lime-dark/30 shadow-2xs">
+                                  Recomendado
+                                </span>
+                              )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-0.5">{m.sub}</p>
+                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{m.sub}</p>
+                            <div className="flex flex-wrap gap-1.5 mt-2.5">
+                              {m.badges.map((b) => (
+                                <span
+                                  key={b}
+                                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md border border-gray-200"
+                                >
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </label>
                       );
@@ -541,14 +625,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   {/* Primary Black CTA Button (Identical to Single Product design!) */}
                   <button
                     type="submit"
-                    disabled={isLoading || items.length === 0}
+                    disabled={isLoading || isBoldOpening || items.length === 0}
                     className="w-full bg-black hover:bg-neutral-800 text-white font-black py-4 px-6 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2.5 disabled:opacity-50"
                   >
-                    <ShieldCheck className="w-5 h-5" />
+                    <ShieldCheck className="w-5 h-5 text-lime" />
                     <span>
-                      {isLoading
-                        ? 'PROCESANDO PAGO CON SEGURO...'
-                        : `PAGAR ${formatCurrency(finalTotal)}`}
+                      {isLoading || isBoldOpening
+                        ? 'CONECTANDO CON PASARELA BOLD...'
+                        : paymentMethod === 'bold'
+                        ? `PAGAR CON BOLD ${formatCurrency(finalTotal)}`
+                        : `CONFIRMAR PEDIDO ${formatCurrency(finalTotal)}`}
                     </span>
                   </button>
 

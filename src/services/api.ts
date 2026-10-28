@@ -685,10 +685,35 @@ export const processCheckout = async (
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
   const orderNumber = `MPR-${dateStr}-${randomPart}`;
+  const orderId = crypto.randomUUID ? crypto.randomUUID() : 'simulated-' + Date.now();
+
+  const newOrder = {
+    id: orderId,
+    order_number: orderNumber,
+    profile_id: profileId,
+    status: 'pending',
+    subtotal: Math.round(subtotal * 100) / 100,
+    discount_applied: discountApplied,
+    total_amount: Math.round(totalAmount * 100) / 100,
+    invoice_status: 'generated',
+    payment_status: shippingAddress.payment_method === 'bold' ? 'pending' : 'paid_in_full',
+    shipping_address: shippingAddress,
+    created_at: new Date().toISOString(),
+    order_items: items.map((i, idx) => ({
+      id: `item-${idx + 1}-${Date.now()}`,
+      product_sku: i.product.sku,
+      quantity: i.quantity,
+      unit_price: i.product.discount_price ?? i.product.price,
+      total_price: (i.product.discount_price ?? i.product.price) * i.quantity,
+      product: i.product,
+    })),
+  };
+
+  saveLocalOrder(newOrder);
 
   return {
     success: true,
-    order_id: crypto.randomUUID ? crypto.randomUUID() : 'simulated-' + Date.now(),
+    order_id: orderId,
     order_number: orderNumber,
     subtotal: Math.round(subtotal * 100) / 100,
     discount_applied: discountApplied,
@@ -697,11 +722,57 @@ export const processCheckout = async (
   };
 };
 
+export const LOCAL_STORAGE_ORDERS_KEY = 'mpr_local_orders';
+
+export const getLocalOrders = (): any[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ORDERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+export const saveLocalOrder = (order: any): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getLocalOrders();
+    const filtered = current.filter((o) => o.order_number !== order.order_number);
+    localStorage.setItem(LOCAL_STORAGE_ORDERS_KEY, JSON.stringify([order, ...filtered]));
+  } catch (e) {
+    console.warn('Error saving order to localStorage:', e);
+  }
+};
+
+export const markOrderPaid = (orderNumber: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const orders = getLocalOrders();
+    const updated = orders.map((o) => {
+      if (o.order_number === orderNumber) {
+        return {
+          ...o,
+          payment_status: 'paid_in_full',
+          status: 'processing',
+          payment_date: new Date().toISOString(),
+        };
+      }
+      return o;
+    });
+    localStorage.setItem(LOCAL_STORAGE_ORDERS_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Error marking order paid:', e);
+  }
+};
+
 // ==============================================================================
 // SERVICIOS DEL PANEL DE ADMINISTRACIÓN (INVENTARIO, PEDIDOS, STORAGE)
 // ==============================================================================
 
 export const fetchOrders = async (): Promise<any[]> => {
+  const localOrders = getLocalOrders();
+
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -713,15 +784,18 @@ export const fetchOrders = async (): Promise<any[]> => {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        return data;
+        // Merge any local orders not yet in Supabase
+        const remoteIds = new Set(data.map((o: any) => o.order_number));
+        const uncommittedLocal = localOrders.filter((o) => !remoteIds.has(o.order_number));
+        return [...uncommittedLocal, ...data];
       }
     } catch (err) {
       console.warn('Error fetching orders from Supabase:', err);
     }
   }
 
-  // Fallback demo orders
-  return [
+  // Fallback demo orders + local orders placed by user
+  const fallbackOrders = [
     {
       id: 'ord-001',
       order_number: 'MPR-20261008-883A',
@@ -737,7 +811,7 @@ export const fetchOrders = async (): Promise<any[]> => {
         city: 'Bogotá',
         address: 'Carrera 15 # 85-30, Apto 402',
         phone: '+57 300 123 4567',
-        payment_method: 'pse',
+        payment_method: 'bold',
       },
       created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
       order_items: [
@@ -765,7 +839,7 @@ export const fetchOrders = async (): Promise<any[]> => {
         city: 'Medellín',
         address: 'Calle 10 Poblado # 43B-12',
         phone: '+57 310 987 6543',
-        payment_method: 'wompi',
+        payment_method: 'bold',
       },
       created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
       order_items: [
@@ -779,6 +853,8 @@ export const fetchOrders = async (): Promise<any[]> => {
       ],
     },
   ];
+
+  return [...localOrders, ...fallbackOrders];
 };
 
 export const updateOrderStatus = async (orderId: string, status: string): Promise<boolean> => {

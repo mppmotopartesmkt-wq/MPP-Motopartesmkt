@@ -89,7 +89,7 @@ export interface OrderItem {
   product?: Product;
 }
 
-export type PaymentMethod = 'transfer' | 'wompi' | 'pse' | 'cash' | 'credit_card' | 'paypal' | 'apple_pay';
+export type PaymentMethod = 'bold' | 'transfer' | 'wompi' | 'pse' | 'cash' | 'credit_card' | 'paypal' | 'apple_pay';
 
 export interface Payment {
   id: string;
