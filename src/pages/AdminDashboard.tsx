@@ -526,8 +526,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           <div className="flex items-center gap-4">
             <img
               src="/mpr-logo-dark.png"
-              alt="MPR"
-              className="h-10 sm:h-12 w-auto object-contain"
+              alt="MPR Motopartes y Repuestos"
+              className="h-8.5 sm:h-9.5 w-auto object-contain"
             />
             <div>
               <div className="flex items-center gap-2">

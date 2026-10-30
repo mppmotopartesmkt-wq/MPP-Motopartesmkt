@@ -26,13 +26,13 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
             <div className="flex items-center">
               <img
                 src="/mpr-logo-dark.png"
-                alt="MPR Repuestos para Motos"
-                className="h-14 sm:h-16 w-auto object-contain"
+                alt="MPR Motopartes y Repuestos"
+                className="h-9 sm:h-10.5 w-auto object-contain"
               />
             </div>
 
             <p className="text-gray-600 text-xs leading-relaxed">
-              Tu tienda definitiva para repuestos, accesorios y equipamiento prémium para motos. Calidad y pasión sobre dos ruedas.
+              Tu tienda especializada en venta de partes, repuestos y accesorios de alto rendimiento para motocicletas en Colombia.
             </p>
 
             {/* Social Media Icons */}

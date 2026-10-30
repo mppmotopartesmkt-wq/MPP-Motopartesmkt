@@ -34,17 +34,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-18">
           
           {/* LOGO MPR */}
           <div
-            className="flex items-center gap-3 cursor-pointer group py-2"
+            className="flex items-center gap-3 cursor-pointer group py-1.5"
             onClick={() => onSelectCategory('All')}
           >
             <img
               src="/mpr-logo-dark.png"
-              alt="MPR Repuestos para Motos"
-              className="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              alt="MPR Motopartes y Repuestos"
+              className="h-9 sm:h-10.5 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </div>
 

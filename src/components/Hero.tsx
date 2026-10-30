@@ -102,32 +102,32 @@ export const Hero: React.FC<HeroProps> = ({ onShopNow, onExplore }) => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-lime"></span>
             </span>
             <span className="text-lime font-black tracking-[0.2em] text-[11px] sm:text-xs uppercase drop-shadow-sm flex items-center gap-1.5">
-              <span>PULSAR 200 NS</span>
+              <span>MPR MOTOPARTES Y REPUESTOS</span>
               <span className="text-white/40">•</span>
-              <span className="text-white font-bold">EN CARRETERA (10s)</span>
+              <span className="text-white font-bold">TIENDA OFICIAL</span>
             </span>
           </div>
 
           {/* Main Title */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-none mb-4">
-            DOMINA LA RUTA.{' '}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-[1.05] mb-4">
+            PARTES Y REPUESTOS{' '}
             <span className="text-lime drop-shadow-[0_0_20px_rgba(163,230,53,0.5)]">
-              PULSAR 200 NS.
+              PARA TU MOTOCICLETA.
             </span>
           </h1>
 
           {/* Subtext description */}
           <p className="text-gray-200 text-sm sm:text-lg max-w-xl mb-6 font-normal leading-relaxed drop-shadow-sm">
-            Adrenalina, potencia y precisión en cada curva del asfalto. Repuestos originales, kits de arrastre reforzados, frenos de alto rendimiento y equipamiento para exprimir al máximo tu motocicleta.
+            Somos especialistas en la venta y distribución de partes, repuestos y accesorios para motocicletas en Colombia. Encuentra repuestos originales y homologados con calidad certificada, garantía y envíos rápidos a todo el país para que ruedes siempre con máxima seguridad y potencia.
           </p>
 
           {/* Features Pills */}
           <div className="flex flex-wrap items-center gap-2 mb-8 text-[11px] font-bold text-gray-300">
             <span className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10">
-              ⚡ Triple Bujía DTS-i
+              ⚡ Repuestos 100% Garantizados
             </span>
             <span className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10">
-              🛡️ Chasis Perimetral
+              🛡️ Variedad de Marcas & Cilindrajes
             </span>
             <span className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10">
               🏁 Envíos a Todo Colombia
@@ -140,7 +140,7 @@ export const Hero: React.FC<HeroProps> = ({ onShopNow, onExplore }) => {
               onClick={onShopNow}
               className="bg-lime hover:bg-lime-bright text-black font-black px-8 py-4 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all transform hover:-translate-y-0.5 shadow-xl shadow-lime/25 flex items-center gap-2"
             >
-              <span>COMPRAR REPUESTOS NS 200</span>
+              <span>VER CATÁLOGO DE REPUESTOS</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -148,7 +148,7 @@ export const Hero: React.FC<HeroProps> = ({ onShopNow, onExplore }) => {
               onClick={onExplore}
               className="bg-white/10 hover:bg-white/20 border border-white/30 hover:border-lime text-white hover:text-lime font-black px-8 py-4 rounded-xl text-xs sm:text-sm uppercase tracking-wider backdrop-blur-md transition-all"
             >
-              EXPLORAR CATÁLOGO
+              EXPLORAR PRODUCTOS
             </button>
           </div>
 

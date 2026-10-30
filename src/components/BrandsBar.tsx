@@ -133,12 +133,12 @@ export const BrandsBar: React.FC<BrandsBarProps> = ({ onSelectBrand }) => {
     },
     {
       name: 'MPR',
-      label: 'MPR Motopartes',
+      label: 'MPR Motopartes y Repuestos',
       renderLogo: () => (
         <div className="flex items-center gap-1.5">
           <span className="text-xl font-black tracking-widest text-lime-dark drop-shadow-xs">MPR</span>
           <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 bg-gray-100 px-1 py-0.5 rounded">
-            PRO
+            REPUESTOS
           </span>
         </div>
       ),

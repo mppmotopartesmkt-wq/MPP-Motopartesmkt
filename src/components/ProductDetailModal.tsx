@@ -410,7 +410,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-xs text-gray-700 mb-6 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Marca:</span>
-                <span className="font-bold text-black">{product.brand || 'MPR Racing'}</span>
+                <span className="font-bold text-black">{product.brand || 'MPR Motopartes'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Código SKU:</span>

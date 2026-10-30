@@ -204,11 +204,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           <div className="hidden sm:flex items-center gap-2.5">
             <img
               src="/mpr-logo-dark.png"
-              alt="MPR"
-              className="h-8 w-auto object-contain"
+              alt="MPR Motopartes y Repuestos"
+              className="h-7 w-auto object-contain"
             />
             <span className="text-xs font-black uppercase tracking-wider text-black">
-              MPR MOTOPARTES • CHECKOUT SEGURO
+              MPR MOTOPARTES Y REPUESTOS • CHECKOUT SEGURO
             </span>
           </div>
 
