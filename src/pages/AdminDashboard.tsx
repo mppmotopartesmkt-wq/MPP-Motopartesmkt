@@ -40,6 +40,7 @@ import {
   saveProduct,
   deleteProduct,
   uploadProductMedia,
+  syncLocalProductsToSupabase,
   UploadMediaResult,
 } from '../services/api';
 import { formatCurrency } from '../utils/format';
@@ -109,9 +110,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newCouponValue, setNewCouponValue] = useState(15);
 
+  // Cloud sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
   const loadData = async () => {
     setLoading(true);
     try {
+      // Auto-sincronizar productos locales que hayan quedado pendientes o guardados en este navegador
+      try {
+        const syncRes = await syncLocalProductsToSupabase();
+        if (syncRes.syncedCount > 0) {
+          console.log(`[Admin] Sincronizados automáticamente ${syncRes.syncedCount} producto(s) a Supabase.`);
+          setSyncStatusMsg({
+            type: 'success',
+            text: `¡Se subieron automáticamente ${syncRes.syncedCount} producto(s) pendientes a la base de datos en la nube!`
+          });
+          setTimeout(() => setSyncStatusMsg(null), 5000);
+        }
+      } catch (syncErr) {
+        console.warn('[Admin] Auto-sync falló:', syncErr);
+      }
+
       const [prods, ords] = await Promise.all([fetchProducts(), fetchOrders()]);
       setProducts(prods);
       setOrders(ords);
@@ -119,6 +139,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      const syncRes = await syncLocalProductsToSupabase();
+      if (syncRes.syncedCount > 0) {
+        setSyncStatusMsg({
+          type: 'success',
+          text: `¡Éxito! Se sincronizaron ${syncRes.syncedCount} producto(s) con la base de datos Supabase.`
+        });
+      } else if (syncRes.errors.length > 0) {
+        setSyncStatusMsg({
+          type: 'error',
+          text: `Error al subir productos: ${syncRes.errors.join(', ')}`
+        });
+      } else {
+        setSyncStatusMsg({
+          type: 'info',
+          text: 'Todos los productos ya están sincronizados y al día en la base de datos en la nube.'
+        });
+      }
+      const prods = await fetchProducts();
+      setProducts(prods);
+    } catch (err: any) {
+      setSyncStatusMsg({
+        type: 'error',
+        text: `Error de sincronización: ${err?.message || 'Error de conexión'}`
+      });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncStatusMsg(null), 5000);
     }
   };
 
@@ -837,6 +890,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 {/* Primary Action Buttons */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
+                    onClick={handleManualSync}
+                    disabled={isSyncing}
+                    title="Sincronizar productos pendientes del navegador con la base de datos Supabase"
+                    className="bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-800 font-black text-xs uppercase px-3.5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-gray-200"
+                  >
+                    <RefreshCw className={`w-4 h-4 text-gray-600 ${isSyncing ? 'animate-spin text-lime' : ''}`} />
+                    <span className="hidden sm:inline">{isSyncing ? 'Sincronizando...' : 'Sincronizar Nube'}</span>
+                  </button>
+
+                  <button
                     onClick={handleExportCSV}
                     title="Exportar inventario filtrado a archivo CSV / Excel"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-black text-xs uppercase px-3.5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-gray-200"
@@ -933,6 +996,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               </div>
 
             </div>
+
+            {/* Cloud Sync Status Banner */}
+            {syncStatusMsg && (
+              <div
+                className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-bold transition-all ${
+                  syncStatusMsg.type === 'success'
+                    ? 'bg-lime/15 border-lime/40 text-black'
+                    : syncStatusMsg.type === 'error'
+                    ? 'bg-red-50 border-red-200 text-red-700'
+                    : 'bg-blue-50 border-blue-200 text-blue-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {syncStatusMsg.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                  ) : syncStatusMsg.type === 'error' ? (
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 text-blue-500 shrink-0" />
+                  )}
+                  <span>{syncStatusMsg.text}</span>
+                </div>
+                <button
+                  onClick={() => setSyncStatusMsg(null)}
+                  className="hover:opacity-70 p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Inventory Table or Empty State */}
             {filteredProducts.length === 0 ? (

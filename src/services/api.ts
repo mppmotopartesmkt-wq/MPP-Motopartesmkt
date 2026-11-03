@@ -873,12 +873,76 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
   return true;
 };
 
+export const isValidUUID = (id?: string): boolean => {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+};
+
+export const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch (e) {
+      // fallback to RFC4122 v4
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+export const syncLocalProductsToSupabase = async (): Promise<{
+  syncedCount: number;
+  errors: string[];
+}> => {
+  if (!isSupabaseConfigured()) {
+    return { syncedCount: 0, errors: ['Supabase no está configurado'] };
+  }
+
+  const localList = getLocalStoredProducts();
+  if (localList.length === 0) {
+    return { syncedCount: 0, errors: [] };
+  }
+
+  let syncedCount = 0;
+  const errors: string[] = [];
+  const updatedLocalList: Product[] = [];
+
+  for (const item of localList) {
+    try {
+      const targetId = isValidUUID(item.id) ? item.id : generateUUID();
+      const payload: Product = {
+        ...item,
+        id: targetId,
+        is_active: item.is_active !== false,
+      };
+
+      const { error } = await supabase.from('products').upsert(payload);
+      if (error) {
+        console.warn(`Error sincronizando ${item.name || item.sku}:`, error.message);
+        errors.push(`${item.name || item.sku}: ${error.message}`);
+        updatedLocalList.push(item);
+      } else {
+        syncedCount++;
+        updatedLocalList.push(payload);
+      }
+    } catch (err: any) {
+      errors.push(`${item.name || item.sku}: ${err.message}`);
+      updatedLocalList.push(item);
+    }
+  }
+
+  setLocalStoredProducts(updatedLocalList);
+  return { syncedCount, errors };
+};
+
 export const saveProduct = async (
   product: Partial<Product>
 ): Promise<{ success: boolean; data?: any; error?: string; warning?: string }> => {
-  const targetId =
-    product.id ||
-    `mpr-prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  // Asegurar siempre un UUID válido para PostgreSQL Supabase
+  const targetId = isValidUUID(product.id) ? product.id! : generateUUID();
 
   const fullProduct: Product = {
     id: targetId,
@@ -914,37 +978,7 @@ export const saveProduct = async (
     reviews_count: product.reviews_count || 1,
   };
 
-  // 1. Always persist locally in localStorage so products remain on page refresh
-  const localList = getLocalStoredProducts();
-  const existingIdx = localList.findIndex(
-    (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
-  );
-  let updatedList: Product[];
-  if (existingIdx >= 0) {
-    updatedList = [...localList];
-    updatedList[existingIdx] = fullProduct;
-  } else {
-    updatedList = [fullProduct, ...localList];
-  }
-  setLocalStoredProducts(updatedList);
-
-  // Unmark from deleted if it was previously marked deleted
-  const deleted = getDeletedProductIds().filter((id) => id !== fullProduct.id);
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(LOCAL_STORAGE_DELETED_KEY, JSON.stringify(deleted));
-  }
-
-  // Update in-memory initial list
-  const memIdx = INITIAL_PRODUCTS.findIndex(
-    (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
-  );
-  if (memIdx >= 0) {
-    INITIAL_PRODUCTS[memIdx] = fullProduct;
-  } else {
-    INITIAL_PRODUCTS.unshift(fullProduct);
-  }
-
-  // 2. Sync to Supabase in parallel if configured
+  // 1. Guardar primero directamente en Supabase si está configurado
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -954,14 +988,51 @@ export const saveProduct = async (
         .single();
 
       if (error) {
-        console.warn('Supabase upsert warning (saved locally in browser):', error.message);
-        return { success: true, data: fullProduct, warning: error.message };
+        console.error('Error guardando en Supabase:', error.message);
+        return {
+          success: false,
+          error: `Error al guardar en Supabase: ${error.message}. Por favor verifica la conexión.`,
+        };
       }
+
+      // Sincronizar en memoria y cache local
+      const localList = getLocalStoredProducts().filter(
+        (p) => p.id !== fullProduct.id && p.sku !== fullProduct.sku
+      );
+      setLocalStoredProducts([fullProduct, ...localList]);
+
+      const memIdx = INITIAL_PRODUCTS.findIndex(
+        (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
+      );
+      if (memIdx >= 0) {
+        INITIAL_PRODUCTS[memIdx] = fullProduct;
+      } else {
+        INITIAL_PRODUCTS.unshift(fullProduct);
+      }
+
       return { success: true, data: data || fullProduct };
     } catch (err: any) {
-      console.warn('Supabase exception (saved locally in browser):', err?.message);
-      return { success: true, data: fullProduct, warning: err?.message };
+      console.error('Excepción al conectar con Supabase:', err);
+      return {
+        success: false,
+        error: `Excepción de red con Supabase: ${err.message}`,
+      };
     }
+  }
+
+  // Fallback si Supabase no está configurado
+  const localList = getLocalStoredProducts().filter(
+    (p) => p.id !== fullProduct.id && p.sku !== fullProduct.sku
+  );
+  setLocalStoredProducts([fullProduct, ...localList]);
+
+  const memIdx = INITIAL_PRODUCTS.findIndex(
+    (p) => p.id === fullProduct.id || p.sku === fullProduct.sku
+  );
+  if (memIdx >= 0) {
+    INITIAL_PRODUCTS[memIdx] = fullProduct;
+  } else {
+    INITIAL_PRODUCTS.unshift(fullProduct);
   }
 
   return { success: true, data: fullProduct };
