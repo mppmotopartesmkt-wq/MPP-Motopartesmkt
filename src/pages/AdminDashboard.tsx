@@ -593,160 +593,516 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-gray-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#dce0e6] p-2 sm:p-4 lg:p-6 flex items-start justify-center font-sans antialiased text-gray-900">
       
-      {/* Top Admin Navbar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          
-          <div className="flex items-center gap-4">
+      {/* Mobile Header Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#eef1f6]/95 backdrop-blur-md border-b border-gray-200/80 px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 hover:text-black"
+            title="Menú"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-black text-lime flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-lime fill-lime/20" />
+            </div>
+            <span className="font-heading font-black text-gray-900 text-sm tracking-wider">MPR MOTOS</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={loadData}
+            className="p-1.5 text-gray-600 hover:text-black rounded-lg bg-white border border-gray-200"
+            title="Refrescar datos"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-lime-dark' : ''}`} />
+          </button>
+          <button
+            onClick={onBackToStore}
+            className="bg-black text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1"
+          >
+            <ArrowLeft className="w-3 h-3 text-lime" />
+            <span>Tienda</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Dashboard Canvas matching Image 2 */}
+      <div className="w-full max-w-[1680px] bg-[#eef1f6] rounded-[28px] sm:rounded-[36px] shadow-2xl border border-white/60 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-[92vh] mt-14 lg:mt-0 relative">
+        
+        {/* Mobile Sidebar Overlay */}
+        {isMobileSidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+
+        {/* Left Sidebar */}
+        <aside
+          className={`
+            fixed lg:static inset-y-0 left-0 z-50 lg:z-auto
+            w-64 lg:w-52 shrink-0 bg-[#eef1f6] lg:bg-transparent p-5 lg:p-0
+            flex flex-col justify-between transition-transform duration-300 ease-in-out
+            ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+          `}
+        >
+          <div className="space-y-6">
+            
+            {/* Brand Header: Star / Sparkle icon + Brand Name */}
+            <div className="flex items-center justify-between px-2 pt-1">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-black text-lime flex items-center justify-center shadow-xs shrink-0">
+                  <Sparkles className="w-4 h-4 text-lime fill-lime/20" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-heading font-black text-gray-900 tracking-wider text-sm leading-tight">
+                    MPR Motos
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    Store Admin
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="lg:hidden p-1 text-gray-400 hover:text-black"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Navigation Menu (Vertical pills matching Image 2) */}
+            <nav className="flex flex-col gap-1.5">
+              {/* Dashboard */}
+              <button
+                onClick={() => {
+                  setActiveTab('inventory');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'inventory'
+                    ? 'text-gray-900 font-extrabold bg-white/70'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4 text-gray-600" />
+                <span>Dashboard</span>
+              </button>
+
+              {/* POS */}
+              <button
+                onClick={() => {}}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-500 hover:text-black hover:bg-white/60 transition-all text-left opacity-75"
+                title="Punto de venta (Próximamente)"
+              >
+                <Store className="w-4 h-4" />
+                <span>POS</span>
+              </button>
+
+              {/* Ventas */}
+              <button
+                onClick={() => {
+                  setActiveTab('orders');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'orders'
+                    ? 'bg-[#bef264] text-black shadow-xs font-black'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Ventas</span>
+                {orders.length > 0 && (
+                  <span className="ml-auto text-[10px] bg-black/10 text-gray-900 px-1.5 py-0.5 rounded-full font-bold">
+                    {orders.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Contabilidad */}
+              <button
+                onClick={() => {}}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-500 hover:text-black hover:bg-white/60 transition-all text-left opacity-75"
+                title="Contabilidad y facturación"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Contabilidad</span>
+              </button>
+
+              {/* Inventario (Highlighted in lime pill like Image 2 "Purchase") */}
+              <button
+                onClick={() => {
+                  setActiveTab('inventory');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'inventory'
+                    ? 'bg-[#bef264] text-black shadow-xs font-black'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                <span>Inventario</span>
+                <span className="ml-auto text-[10px] bg-black/10 text-gray-900 px-1.5 py-0.5 rounded-full font-bold">
+                  {products.length}
+                </span>
+              </button>
+
+              {/* Pedidos */}
+              <button
+                onClick={() => {
+                  setActiveTab('orders');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'orders'
+                    ? 'bg-[#bef264] text-black shadow-xs font-black'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Pedidos</span>
+              </button>
+
+              {/* Cupones */}
+              <button
+                onClick={() => {
+                  setActiveTab('coupons');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'coupons'
+                    ? 'bg-[#bef264] text-black shadow-xs font-black'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <Tag className="w-4 h-4" />
+                <span>Cupones</span>
+              </button>
+
+              {/* Cloud Storage */}
+              <button
+                onClick={() => {
+                  setActiveTab('storage');
+                  setIsMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all text-left ${
+                  activeTab === 'storage'
+                    ? 'bg-[#bef264] text-black shadow-xs font-black'
+                    : 'text-gray-600 hover:text-black hover:bg-white/60'
+                }`}
+              >
+                <Upload className="w-4 h-4" />
+                <span>Media & Nube</span>
+              </button>
+
+              {/* Clientes */}
+              <button
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-500 hover:text-black hover:bg-white/60 transition-all text-left opacity-75"
+              >
+                <Users className="w-4 h-4" />
+                <span>Clientes</span>
+              </button>
+
+              {/* Configuración */}
+              <button
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-500 hover:text-black hover:bg-white/60 transition-all text-left opacity-75"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Configuración</span>
+              </button>
+
+              {/* Ayuda */}
+              <button
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-500 hover:text-black hover:bg-white/60 transition-all text-left opacity-75"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>Ayuda</span>
+              </button>
+            </nav>
+          </div>
+
+          {/* Brand logo at bottom of sidebar (properly constrained to h-6) */}
+          <div className="pt-6 border-t border-gray-200/60 flex items-center justify-between px-2">
             <img
               src="/mpr-logo-dark.png"
-              alt="MPR Motopartes y Repuestos"
-              className="h-8.5 sm:h-9.5 w-auto object-contain"
+              alt="MPR"
+              className="h-6 w-auto max-w-[110px] object-contain opacity-80"
             />
+            <span className="text-[10px] font-bold text-gray-400">v1.2</span>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col gap-6 min-w-0">
+          
+          {/* Top Header of Main Area matching Image 2 */}
+          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black uppercase text-gray-900 tracking-wider">
-                  PANEL DE ADMINISTRACIÓN
-                </span>
-                <span className="bg-lime text-black font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider shadow-xs">
-                  ROL: ADMIN
-                </span>
+              <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                <span>Bienvenido, Administrador</span>
+                <span className="text-xl">🎉</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
+                Aquí tienes el resumen y control de tu inventario en tiempo real.
+              </p>
+            </div>
+
+            {/* Utility pill bar on top right matching Image 2 */}
+            <div className="flex items-center gap-2.5 self-start sm:self-auto">
+              <div className="bg-white/80 backdrop-blur-md border border-gray-200/80 rounded-full px-3.5 py-1.5 flex items-center gap-3 shadow-xs text-gray-500">
+                {/* Quick search button */}
+                <button
+                  onClick={() => {
+                    const el = document.getElementById('inventory-search-input');
+                    el?.focus();
+                  }}
+                  className="hover:text-black transition-colors p-1"
+                  title="Buscar en inventario"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+
+                {/* Moon icon */}
+                <button
+                  className="hover:text-black transition-colors p-1"
+                  title="Modo Oscuro"
+                >
+                  <Moon className="w-4 h-4" />
+                </button>
+
+                {/* Notification bell with red badge */}
+                <div className="relative p-1 cursor-pointer" title="Notificaciones">
+                  <Bell className="w-4 h-4 text-gray-600 hover:text-black transition-colors" />
+                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+                </div>
+
+                {/* Calendar */}
+                <div
+                  className="p-1 hover:text-black transition-colors cursor-pointer"
+                  title={new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                >
+                  <Calendar className="w-4 h-4 text-gray-600" />
+                </div>
+
+                {/* User Avatar with online indicator */}
+                <div className="relative pl-1">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-gray-900 font-black text-[11px] flex items-center justify-center shadow-xs border border-white">
+                    AD
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-lime rounded-full border-2 border-white ring-1 ring-black/5" />
+                </div>
               </div>
-              <p className="text-[11px] text-gray-500 font-medium">
-                Inventario, Pedidos & Supabase Storage
+
+              {/* Volver a la Tienda button */}
+              <button
+                onClick={onBackToStore}
+                className="bg-black hover:bg-gray-800 text-white font-black text-xs px-4 py-2 rounded-full flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-lime" />
+                <span className="hidden sm:inline">Volver a la Tienda</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Secondary Subtabs Pill Bar matching Image 2 */}
+          <div className="bg-gray-200/70 p-1.5 rounded-full inline-flex items-center gap-1 sm:gap-4 overflow-x-auto max-w-full text-xs font-semibold text-gray-600">
+            {[
+              { id: 'inventory', label: 'Gestión de Inventario' },
+              { id: 'orders', label: 'Pedidos & Despachos' },
+              { id: 'coupons', label: 'Cupones de Descuento' },
+              { id: 'storage', label: 'Cloud Storage & Medios' },
+            ].map((subtab) => {
+              const active = activeTab === subtab.id;
+              return (
+                <button
+                  key={subtab.id}
+                  onClick={() => setActiveTab(subtab.id as any)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                    active
+                      ? 'bg-white text-gray-900 shadow-xs'
+                      : 'text-gray-600 hover:text-black hover:bg-white/50'
+                  }`}
+                >
+                  {subtab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Action Row matching Image 2 "+ Add New Order" and filter pill */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  setEditingProduct({
+                    sku: `MPR-${Date.now().toString().slice(-4)}`,
+                    name: '',
+                    price: 150000,
+                    wholesale_price: 120000,
+                    stock_qty: 20,
+                    category: 'Tanques',
+                    brand: 'MPR',
+                    status_text: 'Disponible',
+                    images: ['/categories/tanques.png'],
+                    videos: [],
+                    is_active: true,
+                  });
+                  setIsProductModalOpen(true);
+                }}
+                className="bg-white hover:bg-gray-50 border border-gray-200/80 rounded-full px-4 py-2 text-xs font-bold text-gray-900 shadow-xs flex items-center gap-1.5 transition-all"
+              >
+                <span>+ Nuevo Producto</span>
+              </button>
+
+              <button
+                onClick={handleManualSync}
+                disabled={isSyncing}
+                className="bg-white hover:bg-gray-50 border border-gray-200/80 rounded-full px-3.5 py-2 text-xs font-bold text-gray-700 shadow-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
+                title="Sincronizar productos pendientes con Supabase"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${isSyncing ? 'animate-spin text-lime-dark' : ''}`} />
+                <span className="hidden md:inline">{isSyncing ? 'Sincronizando...' : 'Sincronizar Nube'}</span>
+              </button>
+
+              <button
+                onClick={handleExportCSV}
+                className="bg-white hover:bg-gray-50 border border-gray-200/80 rounded-full px-3.5 py-2 text-xs font-bold text-gray-700 shadow-xs flex items-center gap-1.5 transition-all"
+                title="Descargar inventario CSV"
+              >
+                <Download className="w-3.5 h-3.5 text-gray-500" />
+                <span className="hidden md:inline">Exportar CSV</span>
+              </button>
+            </div>
+
+            {/* Quick Search & Status Pill Filter */}
+            <div className="flex items-center gap-2 self-stretch sm:self-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  id="inventory-search-input"
+                  type="text"
+                  placeholder="Buscar por SKU, Nombre..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-white border border-gray-200/80 rounded-full pl-8 pr-7 py-2 text-xs text-gray-800 shadow-xs focus:outline-none focus:border-black font-medium"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setCurrentPage(1);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              <div className="relative bg-white border border-gray-200/80 rounded-full px-3 py-1.5 shadow-xs flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer">
+                <select
+                  value={selectedStockLevel}
+                  onChange={(e) => {
+                    setSelectedStockLevel(e.target.value as StockLevel);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-transparent text-xs text-gray-700 font-bold focus:outline-none cursor-pointer appearance-none pr-4"
+                >
+                  <option value="all">Status: Todos</option>
+                  <option value="zero">Agotado (0)</option>
+                  <option value="critical">🚨 Crítico (1-9)</option>
+                  <option value="low">⚠️ Bajo (10-24)</option>
+                  <option value="optimal">✓ Óptimo (25+)</option>
+                </select>
+                <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2.5 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* KPI Cards Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 1 */}
+            <div className="bg-white/80 backdrop-blur-xs border border-gray-200/70 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-black/20 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Ventas Totales
+                </span>
+                <div className="p-2 rounded-xl bg-lime/20 text-black">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-gray-900">
+                {formatCurrency(totalSalesCOP)}
+              </div>
+              <p className="text-[11px] text-gray-500 font-medium mt-1">
+                {totalOrdersCount} pedidos procesados
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-white/80 backdrop-blur-xs border border-gray-200/70 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-black/20 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Valor en Inventario
+                </span>
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                  <Package className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-gray-900">
+                {formatCurrency(totalInventoryValue)}
+              </div>
+              <p className="text-[11px] text-gray-500 font-medium mt-1">
+                {products.length} referencias registradas
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-white/80 backdrop-blur-xs border border-gray-200/70 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-black/20 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Órdenes Registradas
+                </span>
+                <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-gray-900">
+                {totalOrdersCount}
+              </div>
+              <p className="text-[11px] text-gray-500 font-medium mt-1">
+                Descuento atómico vía RPC
+              </p>
+            </div>
+
+            {/* Card 4 */}
+            <div className="bg-white/80 backdrop-blur-xs border border-gray-200/70 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-black/20 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Alertas de Stock
+                </span>
+                <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-amber-600">
+                {lowStockItems.length}
+              </div>
+              <p className="text-[11px] text-gray-500 font-medium mt-1">
+                Referencias con stock &lt; 25
               </p>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={loadData}
-              className="p-2 text-gray-600 hover:text-black rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-              title="Refrescar datos"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime-dark' : ''}`} />
-            </button>
-
-            <button
-              onClick={onBackToStore}
-              className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-4 py-2.5 rounded-lg tracking-wider flex items-center gap-2 transition-all shadow-sm"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-lime" />
-              <span>Volver a la Tienda</span>
-            </button>
-          </div>
-
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        {/* KPI Cards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* Card 1: Ventas Totales */}
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Ventas Totales (COP)
-              </span>
-              <div className="p-2 rounded-xl bg-lime/20 text-black">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900">
-              {formatCurrency(totalSalesCOP)}
-            </div>
-            <p className="text-[11px] text-gray-500 font-medium mt-1">
-              {totalOrdersCount} pedidos procesados
-            </p>
-          </div>
-
-          {/* Card 2: Valor en Inventario */}
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Valor en Inventario
-              </span>
-              <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
-                <Package className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900">
-              {formatCurrency(totalInventoryValue)}
-            </div>
-            <p className="text-[11px] text-gray-500 font-medium mt-1">
-              {products.length} productos registrados
-            </p>
-          </div>
-
-          {/* Card 3: Pedidos Registrados */}
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Órdenes Registradas
-              </span>
-              <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
-                <ShoppingBag className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900">
-              {totalOrdersCount}
-            </div>
-            <p className="text-[11px] text-gray-500 font-medium mt-1">
-              Descuento atómico vía RPC
-            </p>
-          </div>
-
-          {/* Card 4: Alertas de Stock Bajo */}
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-xs hover:border-black/20 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Alertas de Stock
-              </span>
-              <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-amber-600">
-              {lowStockItems.length}
-            </div>
-            <p className="text-[11px] text-gray-500 font-medium mt-1">
-              Referencias con existencias &lt; 25
-            </p>
-          </div>
-
-        </div>
-
-        {/* Tab Selector */}
-        <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto">
-          {[
-            { id: 'inventory', label: 'Inventario de Productos', icon: Package },
-            { id: 'orders', label: 'Gestión de Pedidos', icon: ShoppingBag },
-            { id: 'coupons', label: 'Cupones de Descuento', icon: Tag },
-            { id: 'storage', label: 'Supabase Storage (Fotos & Videos)', icon: Upload },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                  active
-                    ? 'bg-black text-white shadow-sm'
-                    : 'text-gray-600 hover:text-black hover:bg-gray-100'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${active ? 'text-lime' : ''}`} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
 
         {/* ========================================================================= */}
         {/* TAB 1: INVENTARIO DE PRODUCTOS (FILTROS INTELIGENTES) */}
@@ -1072,10 +1428,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 </button>
               </div>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
+              <div className="bg-white border border-gray-200/80 rounded-3xl overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-200 font-bold">
+                    <thead className="bg-gray-50/80 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-200 font-bold">
                       <tr>
                         <th className="py-3.5 px-4">Producto</th>
                         <th className="py-3.5 px-4">SKU</th>
@@ -1088,7 +1444,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {filteredProducts.map((p) => {
+                      {paginatedProducts.map((p) => {
                         const hasDiscount = p.discount_price != null && p.discount_price < p.price;
                         const missingPhoto = isMissingRealPhoto(p);
                         const hasVideos = p.videos && p.videos.length > 0;
@@ -1243,6 +1599,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination Controls matching Image 2 */}
+                {filteredProducts.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-gray-100 bg-white">
+                    <span className="text-xs text-gray-500 font-medium">
+                      Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(filteredProducts.length, currentPage * itemsPerPage)} de {filteredProducts.length} referencias
+                    </span>
+                    <div className="flex items-center gap-1.5 bg-gray-100/90 p-1 rounded-full border border-gray-200/60 shadow-xs">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        title="Página anterior"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum = i + 1;
+                        if (totalPages > 5 && currentPage > 3) {
+                          pageNum = Math.min(totalPages - 4 + i, currentPage - 2 + i);
+                        }
+                        const isActive = pageNum === currentPage;
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-7 h-7 rounded-full text-xs font-bold transition-all ${
+                              isActive
+                                ? 'bg-[#bef264] text-black shadow-xs font-black'
+                                : 'text-gray-600 hover:bg-white hover:text-black'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        title="Página siguiente"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1534,7 +1937,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
           </div>
         )}
 
-      </main>
+        </div>
+      </div>
 
       {/* ========================================================================= */}
       {/* MODAL: CREAR / EDITAR PRODUCTO */}
