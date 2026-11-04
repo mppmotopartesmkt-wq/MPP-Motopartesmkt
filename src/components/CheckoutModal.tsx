@@ -3,6 +3,7 @@ import {
   X,
   ShieldCheck,
   CheckCircle,
+  Clock,
   CreditCard,
   Building,
   AlertTriangle,
@@ -236,31 +237,95 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {completedOrder ? (
           /* ========================================================================= */
-          /* SUCCESS SCREEN (CLEAN WHITE RECEIPT) */
+          /* ORDER STATUS SCREEN: PENDING BOLD VS CONFIRMED/COD */
           /* ========================================================================= */
           <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 space-y-8 animate-fadeIn">
             
-            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 shadow-md">
-              <CheckCircle className="w-10 h-10" />
+            {/* Dynamic Status Icon */}
+            {paymentMethod === 'bold' ? (
+              <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto border-2 border-amber-400 shadow-md">
+                <Clock className="w-10 h-10 animate-pulse" />
+              </div>
+            ) : paymentMethod === 'cash' ? (
+              <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border-2 border-blue-400 shadow-md">
+                <Truck className="w-10 h-10" />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 shadow-md">
+                <CheckCircle className="w-10 h-10" />
+              </div>
+            )}
+
+            {/* Dynamic Titles */}
+            <div className="space-y-2">
+              {paymentMethod === 'bold' ? (
+                <>
+                  <span className="text-xs font-black text-amber-800 tracking-widest uppercase bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-300 inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                    <span>PEDIDO REGISTRADO • PENDIENTE DE PAGO</span>
+                  </span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-black uppercase tracking-tight pt-1">
+                    Completa tu pago con Bold, {fullName}
+                  </h2>
+                  <p className="text-sm text-gray-600 max-w-lg mx-auto">
+                    Tu orden ha sido registrada pero el pago aún <strong className="text-black">NO ha sido completado</strong>. Tus repuestos no serán despachados hasta que Bold apruebe la transacción.
+                  </p>
+                </>
+              ) : paymentMethod === 'cash' ? (
+                <>
+                  <span className="text-xs font-black text-blue-800 tracking-widest uppercase bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-300">
+                    📦 PEDIDO REGISTRADO • PAGO CONTRAENTREGA
+                  </span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-black uppercase tracking-tight pt-1">
+                    ¡Pedido Recibido, {fullName}!
+                  </h2>
+                  <p className="text-sm text-gray-600 max-w-lg mx-auto">
+                    Pagarás en efectivo al momento de recibir tus repuestos en tu dirección de entrega.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs font-black text-emerald-700 tracking-widest uppercase bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200">
+                    ¡ORDEN CONFIRMADA EXITOSAMENTE!
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-black uppercase tracking-tight">
+                    Gracias por tu compra, {fullName}
+                  </h2>
+                  <p className="text-sm text-gray-600 max-w-lg mx-auto">
+                    Hemos confirmado tu pago y tu pedido ha sido enviado al equipo de bodega y logística.
+                  </p>
+                </>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <span className="text-xs font-black text-emerald-700 tracking-widest uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                ¡ORDEN CONFIRMADA EXITOSAMENTE!
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-black uppercase tracking-tight">
-                Gracias por tu compra, {fullName}
-              </h2>
-              <p className="text-sm text-gray-600 max-w-lg mx-auto">
-                Hemos reservado y descontado tu inventario en la base de datos de manera atómica. Tu pedido ha sido enviado al equipo de bodega y logística.
-              </p>
-            </div>
+            {/* Warning Callout for Pending Bold Payments */}
+            {paymentMethod === 'bold' && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl text-left text-xs text-amber-900 space-y-1">
+                <div className="flex items-center gap-2 font-black uppercase tracking-wide">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Estado: Pago no verificado aún</span>
+                </div>
+                <p className="text-amber-800">
+                  Si saliste de la pasarela, cerraste la ventana o cancelaste, tu dinero <strong>NO fue cobrado</strong> y el pedido permanece <strong>retenido</strong>. Haz clic abajo en <strong>"Pagar con Bold Ahora"</strong> para finalizar.
+                </p>
+              </div>
+            )}
 
             {/* Order Details Card */}
             <div className="bg-[#f8f9fa] border border-gray-200 rounded-2xl p-6 sm:p-8 text-left text-sm space-y-4 shadow-sm">
               <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                 <span className="text-gray-500 font-medium">Número de Pedido:</span>
                 <span className="font-mono font-black text-black text-base">{completedOrder.order_number}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                <span className="text-gray-500 font-medium">Estado del Pedido:</span>
+                <span className={`font-black uppercase text-xs px-2.5 py-1 rounded ${
+                  paymentMethod === 'bold'
+                    ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                }`}>
+                  {paymentMethod === 'bold' ? '⏳ Pendiente de Pago (No Despachar)' : '✅ Aprobado para Despacho'}
+                </span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                 <span className="text-gray-500 font-medium">Factura Electrónica (DIAN):</span>
@@ -271,47 +336,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 <span className="text-gray-900 font-bold">{address}, {city}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                <span className="text-gray-500 font-medium">Método de Pago Seleccionado:</span>
+                <span className="text-gray-500 font-medium">Método de Pago:</span>
                 <span className="text-black uppercase font-extrabold">
-                  {paymentMethod === 'bold' ? 'Bold Colombia (En Línea)' : paymentMethod}
+                  {paymentMethod === 'bold' ? 'Bold Colombia (PSE, Nequi, Tarjetas)' : paymentMethod}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2 text-lg font-black text-black">
-                <span>Total Facturado:</span>
+                <span>Total a Pagar:</span>
                 <span className="text-black">{formatCurrency(completedOrder.total_amount)}</span>
               </div>
             </div>
 
-            {/* Bold Colombia Payment Reopen Notice */}
-            {paymentMethod === 'bold' && (
-              <div className="bg-gradient-to-r from-emerald-50 to-lime/20 border border-emerald-200 rounded-2xl p-5 text-left flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded">
-                      Pasarela Bold
-                    </span>
-                    <span className="text-xs font-black text-gray-900">
-                      Transacción en Proceso con Bold Colombia
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    Aceptamos PSE, Nequi, Daviplata, Tarjetas y Botón Bancolombia. Si necesitas reabrir la ventana de pago:
-                  </p>
-                </div>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              {paymentMethod === 'bold' && (
                 <button
                   type="button"
                   onClick={handleReopenBold}
                   disabled={isBoldOpening}
-                  className="bg-black hover:bg-neutral-800 text-white font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider shrink-0 flex items-center gap-2 shadow-sm transition-all"
+                  className="bg-lime hover:bg-lime-bright text-black font-black py-4 px-8 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-lg shadow-lime/25 inline-flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
                 >
-                  <Zap className="w-4 h-4 text-lime" />
-                  <span>{isBoldOpening ? 'Iniciando Bold...' : 'Pagar con Bold'}</span>
+                  <Zap className="w-4 h-4 text-black" />
+                  <span>{isBoldOpening ? 'Iniciando Bold...' : 'Pagar con Bold Ahora'}</span>
                 </button>
-              </div>
-            )}
+              )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <button
                 onClick={onClose}
                 className="bg-black hover:bg-neutral-800 text-white font-black py-4 px-8 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md inline-flex items-center justify-center gap-2"

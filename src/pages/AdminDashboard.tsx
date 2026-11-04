@@ -31,6 +31,17 @@ import {
   X,
   XCircle,
   CameraOff,
+  LayoutGrid,
+  Moon,
+  Bell,
+  Calendar,
+  Store,
+  Users,
+  FileText,
+  HelpCircle,
+  Settings,
+  Menu,
+  ChevronDown,
 } from 'lucide-react';
 import { Product } from '../types';
 import {
@@ -84,6 +95,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   const [smartPreset, setSmartPreset] = useState<SmartPreset>('all');
   const [selectedStockLevel, setSelectedStockLevel] = useState<StockLevel>('all');
   const [sortBy, setSortBy] = useState<SortOption>('default');
+
+  // Pagination & Layout State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Modal for new/edit product
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -319,7 +335,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
     setSmartPreset('all');
     setSelectedStockLevel('all');
     setSortBy('default');
+    setCurrentPage(1);
   };
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleExportCSV = () => {
     if (filteredProducts.length === 0) return;
