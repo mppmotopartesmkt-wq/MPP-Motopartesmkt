@@ -3,9 +3,17 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Home } from './pages/Home';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { syncLocalProductsToSupabase } from './services/api';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'store' | 'admin'>('store');
+
+  // Auto-sync any local products trapped in this browser on mount
+  useEffect(() => {
+    syncLocalProductsToSupabase().catch((err) => {
+      console.warn('Auto-sync on load:', err);
+    });
+  }, []);
 
   // Listen to hash changes (#admin or #store)
   useEffect(() => {

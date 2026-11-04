@@ -493,22 +493,42 @@ export const LOCAL_STORAGE_DELETED_KEY = 'mpr_deleted_products';
 
 export const getLocalStoredProducts = (): Product[] => {
   if (typeof window === 'undefined') return [];
-  try {
-    let raw = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
-    // Backward compatibility: fallback to legacy key if exists
-    if (!raw) {
-      const legacyRaw = localStorage.getItem('mpp_custom_products');
-      if (legacyRaw) {
-        raw = legacyRaw;
-        // Auto-migrate to new MPR key
-        localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, legacyRaw);
+  const knownKeys = [
+    LOCAL_STORAGE_PRODUCTS_KEY,
+    'mpp_custom_products',
+    'products',
+    'custom_products',
+    'ridez_products',
+    'mpr_products'
+  ];
+  const list: Product[] = [];
+  const seenSkus = new Set<string>();
+
+  for (const key of knownKeys) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((p) => {
+            if (p && (p.name || p.sku)) {
+              const sku = (p.sku || '').trim();
+              if (sku && !seenSkus.has(sku)) {
+                seenSkus.add(sku);
+                list.push(p);
+              } else if (!sku && p.id && !list.some((x) => x.id === p.id)) {
+                list.push(p);
+              }
+            }
+          });
+        }
       }
+    } catch (e) {
+      // ignore
     }
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    console.warn('Error reading products from localStorage:', e);
-    return [];
   }
+
+  return list;
 };
 
 export const setLocalStoredProducts = (products: Product[]): void => {
@@ -898,6 +918,7 @@ export const syncLocalProductsToSupabase = async (): Promise<{
   errors: string[];
 }> => {
   if (!isSupabaseConfigured()) {
+    console.warn('[Sync] Supabase no está configurado');
     return { syncedCount: 0, errors: ['Supabase no está configurado'] };
   }
 
@@ -906,29 +927,85 @@ export const syncLocalProductsToSupabase = async (): Promise<{
     return { syncedCount: 0, errors: [] };
   }
 
+  console.log(`[Sync] Iniciando sincronización de ${localList.length} producto(s) locales...`);
+
   let syncedCount = 0;
   const errors: string[] = [];
   const updatedLocalList: Product[] = [];
 
   for (const item of localList) {
     try {
-      const targetId = isValidUUID(item.id) ? item.id : generateUUID();
-      const payload: Product = {
-        ...item,
+      const cleanSku = (item.sku || `MPR-${Date.now().toString().slice(-4)}`).trim();
+      const cleanName = (item.name || 'Producto MPR').trim();
+      const baseSlug = (item.slug || cleanName)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+      const cleanSlug = baseSlug || `producto-${Date.now().toString().slice(-4)}`;
+
+      // Verificar si ya existe este SKU en la base de datos de Supabase
+      const { data: existingBySku } = await supabase
+        .from('products')
+        .select('id, sku, slug')
+        .eq('sku', cleanSku)
+        .maybeSingle();
+
+      const targetId = existingBySku?.id || (isValidUUID(item.id) ? item.id! : generateUUID());
+
+      const payload: any = {
         id: targetId,
+        sku: cleanSku,
+        name: cleanName,
+        slug: existingBySku?.slug || cleanSlug,
+        price: Number(item.price) || 0,
+        discount_price: item.discount_price ? Number(item.discount_price) : null,
+        wholesale_price: item.wholesale_price ? Number(item.wholesale_price) : null,
+        stock_qty: Number(item.stock_qty) || 0,
+        category: item.category || 'Repuestos',
+        brand: item.brand || 'MPR',
+        status_text: item.status_text || 'Disponible',
         is_active: item.is_active !== false,
+        images:
+          item.images && item.images.length > 0
+            ? item.images
+            : [getDefaultCategoryPhoto(item.category || 'Repuestos')],
+        videos: item.videos || [],
+        description: item.description || '',
+        rating: item.rating || 5.0,
+        reviews_count: item.reviews_count || 1,
       };
 
-      const { error } = await supabase.from('products').upsert(payload);
-      if (error) {
-        console.warn(`Error sincronizando ${item.name || item.sku}:`, error.message);
-        errors.push(`${item.name || item.sku}: ${error.message}`);
-        updatedLocalList.push(item);
+      if (existingBySku) {
+        // Actualizar el producto existente en Supabase
+        const { error: updErr } = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', existingBySku.id);
+        if (updErr) {
+          throw new Error(updErr.message);
+        }
       } else {
-        syncedCount++;
-        updatedLocalList.push(payload);
+        // Insertar nuevo producto en Supabase
+        const { error: insErr } = await supabase
+          .from('products')
+          .insert(payload);
+        if (insErr) {
+          // Si hubo colisión de slug, añadir sufijo aleatorio y reintentar
+          if (insErr.message?.includes('slug')) {
+            payload.slug = `${cleanSlug}-${Math.random().toString(36).substring(2, 6)}`;
+            const { error: retryErr } = await supabase.from('products').insert(payload);
+            if (retryErr) throw new Error(retryErr.message);
+          } else {
+            throw new Error(insErr.message);
+          }
+        }
       }
+
+      console.log(`[Sync] Sincronizado exitosamente: ${cleanName} (${cleanSku})`);
+      syncedCount++;
+      updatedLocalList.push(payload);
     } catch (err: any) {
+      console.warn(`[Sync] Error sincronizando ${item.name || item.sku}:`, err.message);
       errors.push(`${item.name || item.sku}: ${err.message}`);
       updatedLocalList.push(item);
     }
@@ -1119,4 +1196,10 @@ export const uploadProductImage = async (file: File): Promise<string | null> => 
   const res = await uploadProductMedia(file);
   return res ? res.url : null;
 };
+
+// Global debug helpers for browser console: mprSync() and mprGetLocal()
+if (typeof window !== 'undefined') {
+  (window as any).mprSync = syncLocalProductsToSupabase;
+  (window as any).mprGetLocal = getLocalStoredProducts;
+}
 
