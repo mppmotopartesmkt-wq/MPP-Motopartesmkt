@@ -468,6 +468,15 @@ export const INITIAL_PRODUCTS: Product[] = [
 ];
 
 export const MOCK_COUPONS: Record<string, Coupon> = {
+  MPR10: {
+    id: 'c3333333-3333-3333-3333-333333333333',
+    code: 'MPR10',
+    discount_type: 'percentage',
+    discount_value: 10,
+    max_uses: 1000,
+    current_uses: 0,
+    is_active: true
+  },
   RIDE10: {
     id: 'c1111111-1111-1111-1111-111111111111',
     code: 'RIDE10',
@@ -486,6 +495,145 @@ export const MOCK_COUPONS: Record<string, Coupon> = {
     current_uses: 0,
     is_active: true
   }
+};
+
+export const LOCAL_STORAGE_COUPONS_KEY = 'mpr_coupons';
+
+export const getLocalStoredCoupons = (): Coupon[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_COUPONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+export const saveLocalStoredCoupons = (coupons: Coupon[]): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_COUPONS_KEY, JSON.stringify(coupons));
+  } catch (e) {
+    console.warn('Error saving coupons to localStorage:', e);
+  }
+};
+
+export const fetchCoupons = async (): Promise<Coupon[]> => {
+  const localCoupons = getLocalStoredCoupons();
+  const defaultList: Coupon[] = Object.values(MOCK_COUPONS).map((c) => ({
+    ...c,
+    current_uses: 0,
+  }));
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const map = new Map<string, Coupon>();
+        data.forEach((c: any) => map.set(c.code.toUpperCase(), c as Coupon));
+        localCoupons.forEach((c) => {
+          if (!map.has(c.code.toUpperCase())) {
+            map.set(c.code.toUpperCase(), c);
+          }
+        });
+        return Array.from(map.values());
+      }
+    } catch (err) {
+      console.warn('Error fetching coupons from Supabase:', err);
+    }
+  }
+
+  const map = new Map<string, Coupon>();
+  defaultList.forEach((c) => map.set(c.code.toUpperCase(), c));
+  localCoupons.forEach((c) => map.set(c.code.toUpperCase(), c));
+  return Array.from(map.values());
+};
+
+export const saveCoupon = async (couponData: Partial<Coupon>): Promise<Coupon | null> => {
+  const code = (couponData.code || '').trim().toUpperCase();
+  if (!code) return null;
+
+  const newCoupon: Coupon = {
+    id: couponData.id || `c-${Date.now()}`,
+    code,
+    discount_type: couponData.discount_type || 'percentage',
+    discount_value: couponData.discount_value || 0,
+    max_uses: couponData.max_uses || 1000,
+    current_uses: couponData.current_uses || 0,
+    is_active: couponData.is_active ?? true,
+    expires_at: couponData.expires_at || null,
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .upsert(
+          {
+            code: newCoupon.code,
+            discount_type: newCoupon.discount_type,
+            discount_value: newCoupon.discount_value,
+            max_uses: newCoupon.max_uses,
+            current_uses: newCoupon.current_uses,
+            is_active: newCoupon.is_active,
+            expires_at: newCoupon.expires_at,
+          },
+          { onConflict: 'code' }
+        )
+        .select()
+        .single();
+
+      if (!error && data) {
+        newCoupon.id = data.id;
+      }
+    } catch (err) {
+      console.warn('Error saving coupon to Supabase:', err);
+    }
+  }
+
+  const current = getLocalStoredCoupons();
+  const filtered = current.filter((c) => c.code.toUpperCase() !== code);
+  saveLocalStoredCoupons([newCoupon, ...filtered]);
+
+  return newCoupon;
+};
+
+export const incrementCouponUsage = async (code: string): Promise<void> => {
+  const cleanCode = code.trim().toUpperCase();
+  if (!cleanCode) return;
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.rpc('increment_coupon_uses', { p_coupon_code: cleanCode });
+    } catch (e) {
+      try {
+        const { data } = await supabase
+          .from('coupons')
+          .select('current_uses')
+          .eq('code', cleanCode)
+          .single();
+        if (data) {
+          await supabase
+            .from('coupons')
+            .update({ current_uses: (data.current_uses || 0) + 1 })
+            .eq('code', cleanCode);
+        }
+      } catch (err) {}
+    }
+  }
+
+  const current = getLocalStoredCoupons();
+  const updated = current.map((c) => {
+    if (c.code.toUpperCase() === cleanCode) {
+      return { ...c, current_uses: (c.current_uses || 0) + 1 };
+    }
+    return c;
+  });
+  saveLocalStoredCoupons(updated);
 };
 
 export const LOCAL_STORAGE_PRODUCTS_KEY = 'mpr_custom_products';
@@ -731,6 +879,10 @@ export const processCheckout = async (
 
   saveLocalOrder(newOrder);
 
+  if (couponCode) {
+    incrementCouponUsage(couponCode).catch((e) => console.warn('Could not increment coupon uses:', e));
+  }
+
   return {
     success: true,
     order_id: orderId,
@@ -803,7 +955,7 @@ export const fetchOrders = async (): Promise<any[]> => {
         `)
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         // Merge any local orders not yet in Supabase
         const remoteIds = new Set(data.map((o: any) => o.order_number));
         const uncommittedLocal = localOrders.filter((o) => !remoteIds.has(o.order_number));
@@ -814,67 +966,8 @@ export const fetchOrders = async (): Promise<any[]> => {
     }
   }
 
-  // Fallback demo orders + local orders placed by user
-  const fallbackOrders = [
-    {
-      id: 'ord-001',
-      order_number: 'MPR-20261008-883A',
-      profile_id: 'd1111111-1111-1111-1111-111111111111',
-      status: 'shipped',
-      subtotal: 2199000,
-      discount_applied: 219900,
-      total_amount: 1979100,
-      invoice_status: 'generated',
-      payment_status: 'paid_in_full',
-      shipping_address: {
-        full_name: 'Carlos Rodríguez',
-        city: 'Bogotá',
-        address: 'Carrera 15 # 85-30, Apto 402',
-        phone: '+57 300 123 4567',
-        payment_method: 'bold',
-      },
-      created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-      order_items: [
-        {
-          id: 'item-1',
-          product_sku: 'HELM-SHOEI-RF1400',
-          quantity: 1,
-          unit_price: 2199000,
-          total_price: 2199000,
-        },
-      ],
-    },
-    {
-      id: 'ord-002',
-      order_number: 'MPR-20261008-992B',
-      profile_id: 'd1111111-1111-1111-1111-111111111111',
-      status: 'pending',
-      subtotal: 1299000,
-      discount_applied: 0,
-      total_amount: 1299000,
-      invoice_status: 'pending',
-      payment_status: 'pending',
-      shipping_address: {
-        full_name: 'Santiago Morales',
-        city: 'Medellín',
-        address: 'Calle 10 Poblado # 43B-12',
-        phone: '+57 310 987 6543',
-        payment_method: 'bold',
-      },
-      created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-      order_items: [
-        {
-          id: 'item-2',
-          product_sku: 'JACK-ALP-TGPRV4',
-          quantity: 1,
-          unit_price: 1299000,
-          total_price: 1299000,
-        },
-      ],
-    },
-  ];
-
-  return [...localOrders, ...fallbackOrders];
+  // Only return real orders placed by the user (no fake hardcoded demo orders)
+  return localOrders;
 };
 
 export const updateOrderStatus = async (orderId: string, status: string): Promise<boolean> => {

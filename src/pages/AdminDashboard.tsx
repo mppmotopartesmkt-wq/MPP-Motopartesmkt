@@ -43,10 +43,12 @@ import {
   Menu,
   ChevronDown,
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Coupon } from '../types';
 import {
   fetchProducts,
   fetchOrders,
+  fetchCoupons,
+  saveCoupon,
   updateOrderStatus,
   saveProduct,
   deleteProduct,
@@ -117,14 +119,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   const [uploadedMedia, setUploadedMedia] = useState<UploadMediaResult | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  // New coupon state
-  const [coupons, setCoupons] = useState([
-    { code: 'MPR10', discount_type: 'percentage', discount_value: 10, current_uses: 24, max_uses: 1000, is_active: true },
-    { code: 'RIDE10', discount_type: 'percentage', discount_value: 10, current_uses: 52, max_uses: 1000, is_active: true },
-    { code: 'LIME20', discount_type: 'percentage', discount_value: 20, current_uses: 8, max_uses: 500, is_active: true },
-  ]);
+  // New coupon state (initialized dynamically without hardcoded counts)
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [newCouponCode, setNewCouponCode] = useState('');
-  const [newCouponValue, setNewCouponValue] = useState(15);
+  const [newCouponValue, setNewCouponValue] = useState(0);
 
   // Cloud sync state
   const [isSyncing, setIsSyncing] = useState(false);
@@ -148,9 +146,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
         console.warn('[Admin] Auto-sync falló:', syncErr);
       }
 
-      const [prods, ords] = await Promise.all([fetchProducts(), fetchOrders()]);
+      const [prods, ords, coups] = await Promise.all([
+        fetchProducts(),
+        fetchOrders(),
+        fetchCoupons(),
+      ]);
       setProducts(prods);
       setOrders(ords);
+      setCoupons(coups);
     } catch (e) {
       console.error(e);
     } finally {
@@ -198,6 +201,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
   // KPIs
   const totalSalesCOP = orders.reduce((acc, o) => acc + (o.total_amount || 0), 0);
   const totalOrdersCount = orders.length;
+  const pendingOrdersCount = orders.filter(
+    (o) => o.status === 'pending' || o.payment_status === 'pending'
+  ).length;
   const lowStockItems = products.filter((p) => p.stock_qty < 25);
   const totalInventoryValue = products.reduce((acc, p) => acc + p.price * p.stock_qty, 0);
 
@@ -877,10 +883,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   <Moon className="w-4 h-4" />
                 </button>
 
-                {/* Notification bell with red badge */}
-                <div className="relative p-1 cursor-pointer" title="Notificaciones">
+                {/* Notification bell (only shows badge if there are pending orders) */}
+                <div
+                  className="relative p-1 cursor-pointer"
+                  title={
+                    pendingOrdersCount > 0
+                      ? `${pendingOrdersCount} orden(es) pendiente(s)`
+                      : 'Sin notificaciones pendientes'
+                  }
+                  onClick={() => setActiveTab('orders')}
+                >
                   <Bell className="w-4 h-4 text-gray-600 hover:text-black transition-colors" />
-                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+                  {pendingOrdersCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+                  )}
                 </div>
 
                 {/* Calendar */}
@@ -944,13 +960,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   setEditingProduct({
                     sku: `MPR-${Date.now().toString().slice(-4)}`,
                     name: '',
-                    price: 150000,
-                    wholesale_price: 120000,
-                    stock_qty: 20,
-                    category: 'Tanques',
-                    brand: 'MPR',
+                    price: 0,
+                    wholesale_price: 0,
+                    stock_qty: 0,
+                    category: 'Repuestos',
+                    brand: '',
                     status_text: 'Disponible',
-                    images: ['/categories/tanques.png'],
+                    images: [],
                     videos: [],
                     is_active: true,
                   });
@@ -1292,13 +1308,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                       setEditingProduct({
                         sku: `MPR-${Date.now().toString().slice(-4)}`,
                         name: '',
-                        price: 150000,
-                        wholesale_price: 120000,
-                        stock_qty: 20,
-                        category: 'Tanques',
-                        brand: 'MPR',
+                        price: 0,
+                        wholesale_price: 0,
+                        stock_qty: 0,
+                        category: 'Repuestos',
+                        brand: '',
                         status_text: 'Disponible',
-                        images: ['/categories/tanques.png'],
+                        images: [],
                         videos: [],
                         is_active: true,
                       });
@@ -1671,71 +1687,83 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {orders.map((ord) => (
-                      <tr key={ord.id} className="hover:bg-gray-50/80 transition-colors">
-                        
-                        <td className="py-3.5 px-4 font-mono font-bold text-gray-900">
-                          {ord.order_number}
+                    {orders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center">
+                          <ShoppingBag className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+                          <p className="text-sm font-bold text-gray-700">No hay pedidos registrados todavía</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Las compras realizadas en la tienda aparecerán aquí automáticamente en tiempo real.
+                          </p>
                         </td>
-
-                        <td className="py-3.5 px-4">
-                          <div>
-                            <span className="font-bold text-gray-900 block">
-                              {ord.shipping_address?.full_name || 'Cliente MPR'}
-                            </span>
-                            <span className="text-[11px] text-gray-500">
-                              {ord.shipping_address?.city || 'Colombia'} • {ord.shipping_address?.address || ''}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="py-3.5 px-4 text-gray-500 text-[11px]">
-                          {new Date(ord.created_at).toLocaleDateString('es-CO', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-
-                        <td className="py-3.5 px-4 font-black text-gray-900">
-                          {formatCurrency(ord.total_amount)}
-                        </td>
-
-                        <td className="py-3.5 px-4">
-                          <div className="flex flex-col gap-1 items-start">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                                ord.payment_status === 'paid_in_full'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
-                              }`}
-                            >
-                              {ord.payment_status === 'paid_in_full' ? 'Pagado' : 'Pendiente'}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-500 uppercase">
-                              {ord.shipping_address?.payment_method === 'bold'
-                                ? 'Bold Colombia'
-                                : (ord.shipping_address?.payment_method || 'En Línea')}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="py-3.5 px-4">
-                          <select
-                            value={ord.status}
-                            onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                            className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium transition-all"
-                          >
-                            <option value="pending">⏳ Pendiente</option>
-                            <option value="processing">⚙️ En Proceso</option>
-                            <option value="shipped">🚚 Enviado</option>
-                            <option value="delivered">✅ Entregado</option>
-                            <option value="cancelled">❌ Cancelado</option>
-                          </select>
-                        </td>
-
                       </tr>
-                    ))}
+                    ) : (
+                      orders.map((ord) => (
+                        <tr key={ord.id} className="hover:bg-gray-50/80 transition-colors">
+                          
+                          <td className="py-3.5 px-4 font-mono font-bold text-gray-900">
+                            {ord.order_number}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div>
+                              <span className="font-bold text-gray-900 block">
+                                {ord.shipping_address?.full_name || 'Cliente MPR'}
+                              </span>
+                              <span className="text-[11px] text-gray-500">
+                                {ord.shipping_address?.city || 'Colombia'} • {ord.shipping_address?.address || ''}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-gray-500 text-[11px]">
+                            {new Date(ord.created_at).toLocaleDateString('es-CO', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </td>
+
+                          <td className="py-3.5 px-4 font-black text-gray-900">
+                            {formatCurrency(ord.total_amount)}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="flex flex-col gap-1 items-start">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                                  ord.payment_status === 'paid_in_full'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}
+                              >
+                                {ord.payment_status === 'paid_in_full' ? 'Pagado' : 'Pendiente'}
+                              </span>
+                              <span className="text-[10px] font-bold text-gray-500 uppercase">
+                                {ord.shipping_address?.payment_method === 'bold'
+                                  ? 'Bold Colombia'
+                                  : (ord.shipping_address?.payment_method || 'En Línea')}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <select
+                              value={ord.status}
+                              onChange={(e) => handleStatusChange(ord.id, e.target.value)}
+                              className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white font-medium transition-all"
+                            >
+                              <option value="pending">⏳ Pendiente</option>
+                              <option value="processing">⚙️ En Proceso</option>
+                              <option value="shipped">🚚 Enviado</option>
+                              <option value="delivered">✅ Entregado</option>
+                              <option value="cancelled">❌ Cancelado</option>
+                            </select>
+                          </td>
+
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1773,20 +1801,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                 />
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!newCouponCode) return;
-                    setCoupons([
-                      ...coupons,
-                      {
-                        code: newCouponCode,
-                        discount_type: 'percentage',
-                        discount_value: newCouponValue,
-                        current_uses: 0,
-                        max_uses: 1000,
-                        is_active: true,
-                      },
-                    ]);
+                    await saveCoupon({
+                      code: newCouponCode,
+                      discount_type: 'percentage',
+                      discount_value: newCouponValue,
+                      current_uses: 0,
+                      max_uses: 1000,
+                      is_active: true,
+                    });
+                    const updatedCoups = await fetchCoupons();
+                    setCoupons(updatedCoups);
                     setNewCouponCode('');
+                    setNewCouponValue(0);
                   }}
                   className="bg-black hover:bg-gray-800 text-white font-black text-xs uppercase px-5 py-2 rounded-lg transition-colors shadow-xs"
                 >
@@ -1809,30 +1837,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {coupons.map((c) => (
-                    <tr key={c.code} className="hover:bg-gray-50/80">
-                      <td className="py-3.5 px-4 font-mono font-black text-gray-900">
-                        {c.code}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-600 uppercase font-medium">
-                        {c.discount_type}
-                      </td>
-                      <td className="py-3.5 px-4 font-black text-gray-900">
-                        {c.discount_value}%
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-600 font-medium">
-                        {c.current_uses}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-500">
-                        {c.max_uses}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold uppercase">
-                          Activo
-                        </span>
+                  {coupons.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-400 text-xs">
+                        No hay cupones registrados. Crea uno arriba para comenzar.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    coupons.map((c) => (
+                      <tr key={c.code} className="hover:bg-gray-50/80">
+                        <td className="py-3.5 px-4 font-mono font-black text-gray-900">
+                          {c.code}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-600 uppercase font-medium">
+                          {c.discount_type}
+                        </td>
+                        <td className="py-3.5 px-4 font-black text-gray-900">
+                          {c.discount_value}%
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-600 font-medium">
+                          {c.current_uses}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500">
+                          {c.max_uses}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold uppercase">
+                            Activo
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
