@@ -8,6 +8,11 @@ interface NavbarProps {
   onOpenProfile: () => void;
   onSelectCategory: (category: string) => void;
   onNavigateToAdmin?: () => void;
+  activeNav?: 'inicio' | 'tienda' | 'contacto';
+  onNavChange?: (nav: 'inicio' | 'tienda' | 'contacto') => void;
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
+  onExecuteSearch?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,103 +20,148 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProfile,
   onSelectCategory,
   onNavigateToAdmin,
+  activeNav = 'tienda',
+  onNavChange,
+  searchQuery = '',
+  onSearchChange,
+  onExecuteSearch,
 }) => {
   const { totalItems, setIsCartOpen } = useCart();
   const { profile } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: 'CASCOS', category: 'Cascos' },
-    { name: 'ACCESORIOS', category: 'Accesorios' },
-    { name: 'REPUESTOS', category: 'Repuestos' },
-    { name: 'LLANTAS', category: 'Llantas' },
-    { name: 'BATERÍAS', category: 'Baterías' },
-    { name: 'TANQUES', category: 'Tanques' },
-    { name: 'FAROLAS', category: 'Farolas' },
-    { name: 'OFERTAS', category: 'Sale', isSpecial: true },
-  ];
+  const handleNavClick = (nav: 'inicio' | 'tienda' | 'contacto') => {
+    if (onNavChange) {
+      onNavChange(nav);
+    }
+    if (nav === 'tienda') {
+      onSelectCategory('All');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-18">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
           
-          {/* LOGO MPR */}
+          {/* 1. LOGO MPR (Matches Ferreinter position on the left) */}
           <div
-            className="flex items-center gap-3 cursor-pointer group py-1.5"
-            onClick={() => onSelectCategory('All')}
+            className="flex items-center gap-2 cursor-pointer group py-1 shrink-0"
+            onClick={() => handleNavClick('tienda')}
           >
             <img
               src="/mpr-logo-dark.png"
               alt="MPR Motopartes y Repuestos"
-              className="h-9 sm:h-10.5 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-9 sm:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </div>
 
-          {/* DESKTOP NAVIGATION */}
-          <nav className="hidden lg:flex items-center gap-7">
-            {navLinks.map((link) => (
-              <button
-                key={link.name}
-                onClick={() => onSelectCategory(link.category)}
-                className={`text-xs font-black tracking-wider transition-all uppercase py-1 ${
-                  link.isSpecial
-                    ? 'bg-lime text-black px-2.5 py-1 rounded-full text-[11px] hover:bg-lime-bright shadow-xs'
-                    : 'text-gray-700 hover:text-black'
-                }`}
-              >
-                {link.name}
-              </button>
-            ))}
+          {/* 2. CENTER NAVIGATION: INICIO | TIENDA | CONTACTO (As in reference image) */}
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+            <button
+              onClick={() => handleNavClick('inicio')}
+              className={`text-xs font-black tracking-wider uppercase transition-all px-3 py-1.5 ${
+                activeNav === 'inicio'
+                  ? 'border border-black rounded-full text-black bg-transparent'
+                  : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              INICIO
+            </button>
+
+            <button
+              onClick={() => handleNavClick('tienda')}
+              className={`text-xs font-black tracking-wider uppercase transition-all px-4 py-1.5 ${
+                activeNav === 'tienda'
+                  ? 'border border-black rounded-full text-black bg-transparent shadow-2xs'
+                  : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              TIENDA
+            </button>
+
+            <button
+              onClick={() => handleNavClick('contacto')}
+              className={`text-xs font-black tracking-wider uppercase transition-all px-3 py-1.5 ${
+                activeNav === 'contacto'
+                  ? 'border border-black rounded-full text-black bg-transparent'
+                  : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              CONTACTO
+            </button>
           </nav>
 
-          {/* RIGHT ACTIONS */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* 3. RIGHT SECTION: PILL SEARCH BAR + USER + CART + ADMIN */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Admin Dashboard Quick Button */}
-            {onNavigateToAdmin && (
+            {/* Pill Search Input with Internal [Q BUSCAR] button (As in reference image) */}
+            <div className="hidden sm:flex items-center bg-gray-100/90 rounded-full pl-3.5 pr-1 py-1 border border-gray-200/60 focus-within:border-black focus-within:bg-white transition-all w-52 md:w-64 lg:w-72 shadow-2xs">
+              <input
+                type="text"
+                placeholder="Buscar repuestos..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && onExecuteSearch) {
+                    onExecuteSearch();
+                  }
+                }}
+                className="bg-transparent text-xs font-medium text-gray-900 placeholder-gray-400 focus:outline-none w-full"
+              />
               <button
-                onClick={onNavigateToAdmin}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-neutral-800 text-white font-black text-xs uppercase tracking-wider transition-all shadow-xs"
-                title="Panel de Administración MPR"
+                onClick={onExecuteSearch || onOpenSearch}
+                className="bg-black hover:bg-neutral-800 text-white rounded-full px-3 py-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-xs transition-colors shrink-0"
               >
-                <Shield className="w-3.5 h-3.5 text-lime" />
-                <span>Panel Admin</span>
+                <Search className="w-3 h-3 text-lime" />
+                <span>Buscar</span>
               </button>
-            )}
+            </div>
 
-            {/* Search Icon */}
+            {/* Mobile search trigger */}
             <button
               onClick={onOpenSearch}
-              className="text-gray-700 hover:text-black p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="sm:hidden text-gray-700 hover:text-black p-2 rounded-full hover:bg-gray-100 transition-colors"
               title="Buscar productos"
               aria-label="Buscar"
             >
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Profile / Account Icon */}
+            {/* Admin Dashboard Quick Button */}
+            {onNavigateToAdmin && (
+              <button
+                onClick={onNavigateToAdmin}
+                className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black hover:bg-neutral-800 text-white font-black text-[11px] uppercase tracking-wider transition-all shadow-xs"
+                title="Panel de Administración MPR"
+              >
+                <Shield className="w-3 h-3 text-lime" />
+                <span>Admin</span>
+              </button>
+            )}
+
+            {/* User Account Icon */}
             <button
               onClick={onOpenProfile}
-              className="text-gray-700 hover:text-black p-2 rounded-full hover:bg-gray-100 transition-colors relative"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 hover:text-black transition-colors relative shadow-2xs"
               title={profile ? `Perfil: ${profile.full_name}` : 'Mi Cuenta'}
               aria-label="Mi Cuenta"
             >
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4 sm:w-5 sm:h-5" />
               {profile && (
-                <span className="absolute bottom-1.5 right-1.5 w-2 h-2 bg-lime rounded-full ring-2 ring-white" />
+                <span className="absolute bottom-1 right-1 w-2 h-2 bg-lime rounded-full ring-2 ring-white" />
               )}
             </button>
 
-            {/* Cart Icon with Lime Badge */}
+            {/* Cart Button (Clean rounded box with shopping bag & counter) */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="text-gray-900 hover:text-black p-2 rounded-full hover:bg-gray-100 transition-colors relative"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-black hover:bg-neutral-800 text-white flex items-center justify-center relative shadow-xs transition-all hover:scale-105 active:scale-95"
               title="Carrito de compras"
               aria-label="Carrito de compras"
             >
-              <ShoppingBag className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-lime text-black font-extrabold text-[11px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-lime" />
+              <span className="absolute -top-1 -right-1 bg-lime text-black font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
                 {totalItems}
               </span>
             </button>
@@ -119,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden text-gray-800 hover:text-black p-2"
+              className="md:hidden text-gray-800 hover:text-black p-2"
               aria-label="Menú"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -130,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* MOBILE DROPDOWN */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 pt-3 pb-6 space-y-2 shadow-lg">
+        <div className="md:hidden bg-white border-b border-gray-200 px-4 pt-3 pb-6 space-y-2 shadow-lg">
           {onNavigateToAdmin && (
             <button
               onClick={() => {
@@ -144,22 +194,41 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {navLinks.map((link) => (
+          <div className="flex flex-col gap-1 pb-2 border-b border-gray-100 mb-2">
             <button
-              key={link.name}
               onClick={() => {
-                onSelectCategory(link.category);
+                handleNavClick('inicio');
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full text-left py-2 px-3 text-sm font-bold uppercase rounded-lg transition-colors ${
-                link.isSpecial
-                  ? 'text-black bg-lime font-black'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-black'
+              className={`w-full text-left py-2 px-3 text-xs font-black uppercase rounded-lg ${
+                activeNav === 'inicio' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              {link.name}
+              Inicio
             </button>
-          ))}
+            <button
+              onClick={() => {
+                handleNavClick('tienda');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-2 px-3 text-xs font-black uppercase rounded-lg ${
+                activeNav === 'tienda' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Tienda / Catálogo
+            </button>
+            <button
+              onClick={() => {
+                handleNavClick('contacto');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-2 px-3 text-xs font-black uppercase rounded-lg ${
+                activeNav === 'contacto' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Contacto
+            </button>
+          </div>
         </div>
       )}
     </header>
