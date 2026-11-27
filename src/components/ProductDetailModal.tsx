@@ -420,12 +420,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <span className="text-gray-500 font-medium">Categoría:</span>
                 <span className="font-bold text-black">{product.category || 'Repuestos'}</span>
               </div>
-              {product.wholesale_price && (
-                <div className="flex justify-between items-center bg-lime/20 px-2.5 py-1.5 rounded-lg border border-lime/30">
-                  <span className="text-gray-800 font-black">Precio Por Mayor:</span>
-                  <span className="font-extrabold text-black text-sm">{formatCurrency(product.wholesale_price)}</span>
-                </div>
-              )}
               <div className="flex justify-between items-center pt-1 border-t border-gray-200/60">
                 <span className="text-gray-500 font-medium">Disponibilidad:</span>
                 <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold">

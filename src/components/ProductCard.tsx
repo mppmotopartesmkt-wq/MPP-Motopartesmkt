@@ -14,10 +14,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   const wishlisted = isWishlisted(product.id);
 
   const mainPrice = product.discount_price ?? product.price;
-  const wholesalePrice =
-    product.wholesale_price && product.wholesale_price > 0
-      ? product.wholesale_price
-      : Math.round(mainPrice * 0.9);
 
   const mainImage =
     product.images && product.images.length > 0 && product.images[0]
@@ -90,15 +86,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           {product.name}
         </h3>
 
-        {/* Bottom Row: Price & Wholesale on Left, "Comprar ↗" button on Right */}
+        {/* Bottom Row: Price on Left, "Comprar ↗" button on Right */}
         <div className="mt-auto flex items-end justify-between gap-3 pt-2 border-t border-gray-50">
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-black text-gray-900 tracking-tight leading-tight">
               {formatCurrency(mainPrice)}
             </span>
-            <span className="text-[11px] font-bold text-emerald-600 mt-0.5">
-              Mayor: {formatCurrency(wholesalePrice)}
-            </span>
+            {product.discount_price && product.discount_price < product.price && (
+              <span className="text-[11px] font-medium text-gray-400 line-through mt-0.5">
+                {formatCurrency(product.price)}
+              </span>
+            )}
           </div>
 
           <button
