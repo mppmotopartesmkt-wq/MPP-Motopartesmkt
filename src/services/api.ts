@@ -258,7 +258,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     status_text: 'Por agotarse'
   },
   {
-    id: 'b0000010-0000-0000-0000-0000000010',
+    id: 'b0000010-0000-0000-0000-000000000010',
     sku: 'FAC2008N',
     name: 'Carenaje Completo Pulsar 180 / 220',
     slug: 'carenaje-completo-pulsar-180-fac2008n',
@@ -988,7 +988,7 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
 
 export const isValidUUID = (id?: string): boolean => {
   if (!id) return false;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
 export const generateUUID = (): string => {
@@ -1111,53 +1111,85 @@ export const syncLocalProductsToSupabase = async (): Promise<{
 export const saveProduct = async (
   product: Partial<Product>
 ): Promise<{ success: boolean; data?: any; error?: string; warning?: string }> => {
-  // Asegurar siempre un UUID válido para PostgreSQL Supabase
-  const targetId = isValidUUID(product.id) ? product.id! : generateUUID();
+  const cleanSku = (product.sku || `MPR-${Math.floor(100000 + Math.random() * 900000)}`).trim();
+  const cleanName = (product.name || 'Nuevo Producto MPR').trim();
+  const baseSlug = (product.slug || cleanName)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+  let cleanSlug = baseSlug || `producto-${Date.now().toString().slice(-4)}`;
 
-  const fullProduct: Product = {
-    id: targetId,
-    sku: product.sku || `MPR-${Date.now().toString().slice(-4)}`,
-    name: product.name || 'Nuevo Producto MPR',
-    slug:
-      product.slug ||
-      (product.name || 'producto')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, ''),
-    price: Number(product.price) || 0,
-    discount_price: product.discount_price ? Number(product.discount_price) : null,
-    wholesale_price: product.wholesale_price ? Number(product.wholesale_price) : null,
-    stock_qty: Number(product.stock_qty) || 0,
-    category: product.category || 'Cascos',
-    brand: product.brand || 'MPR',
-    status_text: product.status_text || 'Disponible',
-    is_active: product.is_active !== false,
-    images:
-      product.images && product.images.length > 0
-        ? product.images
-        : ['/mpr-brake-disc.png'],
-    videos: product.videos || [],
-    description: product.description || '',
-    length_mm: product.length_mm ? Number(product.length_mm) : null,
-    width_mm: product.width_mm ? Number(product.width_mm) : null,
-    height_mm: product.height_mm ? Number(product.height_mm) : null,
-    package_details: product.package_details || null,
-    gross_weight_kg: product.gross_weight_kg ? Number(product.gross_weight_kg) : null,
-    net_weight_kg: product.net_weight_kg ? Number(product.net_weight_kg) : null,
-    rating: product.rating || 5.0,
-    reviews_count: product.reviews_count || 1,
-  };
+  let targetId: string = isValidUUID(product.id) ? product.id! : '';
 
   // 1. Guardar primero directamente en Supabase si está configurado
   if (isSupabaseConfigured()) {
     try {
+      // Verificar si ya existe este SKU en la base de datos de Supabase
+      const { data: existingBySku } = await supabase
+        .from('products')
+        .select('id, name, sku, slug')
+        .eq('sku', cleanSku)
+        .maybeSingle();
+
+      if (existingBySku) {
+        // Si el SKU existe y el producto que estamos editando tiene un ID diferente, hay colisión
+        if (targetId && existingBySku.id !== targetId) {
+          return {
+            success: false,
+            error: `El SKU "${cleanSku}" ya está asignado al producto "${existingBySku.name}". Por favor utiliza un SKU único.`,
+          };
+        }
+        // Si estamos editando este producto o venía sin ID/con ID local, adoptamos su ID oficial de Supabase
+        targetId = existingBySku.id;
+        cleanSlug = existingBySku.slug || cleanSlug;
+      }
+
+      if (!targetId) {
+        targetId = generateUUID();
+      }
+
+      const fullProduct: Product = {
+        id: targetId,
+        sku: cleanSku,
+        name: cleanName,
+        slug: cleanSlug,
+        price: Number(product.price) || 0,
+        discount_price: product.discount_price ? Number(product.discount_price) : null,
+        wholesale_price: product.wholesale_price ? Number(product.wholesale_price) : null,
+        stock_qty: Number(product.stock_qty) || 0,
+        category: product.category || 'Repuestos',
+        brand: product.brand || 'MPR',
+        status_text: product.status_text || 'Disponible',
+        is_active: product.is_active !== false,
+        images:
+          product.images && product.images.length > 0
+            ? product.images
+            : ['/categories/repuestos.png'],
+        videos: product.videos || [],
+        description: product.description || '',
+        length_mm: product.length_mm ? Number(product.length_mm) : null,
+        width_mm: product.width_mm ? Number(product.width_mm) : null,
+        height_mm: product.height_mm ? Number(product.height_mm) : null,
+        package_details: product.package_details || null,
+        gross_weight_kg: product.gross_weight_kg ? Number(product.gross_weight_kg) : null,
+        net_weight_kg: product.net_weight_kg ? Number(product.net_weight_kg) : null,
+        rating: product.rating || 5.0,
+        reviews_count: product.reviews_count || 1,
+      };
+
       const { data, error } = await supabase
         .from('products')
-        .upsert(fullProduct)
+        .upsert(fullProduct, { onConflict: 'id' })
         .select()
         .single();
 
       if (error) {
+        if (error.message?.includes('products_sku_key')) {
+          return {
+            success: false,
+            error: `El SKU "${cleanSku}" ya existe en el catálogo. Por favor utiliza un SKU diferente o único.`,
+          };
+        }
         console.error('Error guardando en Supabase:', error.message);
         return {
           success: false,
@@ -1189,6 +1221,39 @@ export const saveProduct = async (
       };
     }
   }
+
+  if (!targetId) {
+    targetId = generateUUID();
+  }
+
+  const fullProduct: Product = {
+    id: targetId,
+    sku: cleanSku,
+    name: cleanName,
+    slug: cleanSlug,
+    price: Number(product.price) || 0,
+    discount_price: product.discount_price ? Number(product.discount_price) : null,
+    wholesale_price: product.wholesale_price ? Number(product.wholesale_price) : null,
+    stock_qty: Number(product.stock_qty) || 0,
+    category: product.category || 'Repuestos',
+    brand: product.brand || 'MPR',
+    status_text: product.status_text || 'Disponible',
+    is_active: product.is_active !== false,
+    images:
+      product.images && product.images.length > 0
+        ? product.images
+        : ['/categories/repuestos.png'],
+    videos: product.videos || [],
+    description: product.description || '',
+    length_mm: product.length_mm ? Number(product.length_mm) : null,
+    width_mm: product.width_mm ? Number(product.width_mm) : null,
+    height_mm: product.height_mm ? Number(product.height_mm) : null,
+    package_details: product.package_details || null,
+    gross_weight_kg: product.gross_weight_kg ? Number(product.gross_weight_kg) : null,
+    net_weight_kg: product.net_weight_kg ? Number(product.net_weight_kg) : null,
+    rating: product.rating || 5.0,
+    reviews_count: product.reviews_count || 1,
+  };
 
   // Fallback si Supabase no está configurado
   const localList = getLocalStoredProducts().filter(

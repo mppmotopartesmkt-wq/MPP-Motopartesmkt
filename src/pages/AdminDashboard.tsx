@@ -497,6 +497,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
       setSaveFeedback({ type: 'error', message: 'Por favor ingresa un SKU único.' });
       return;
     }
+
+    // Validación preventiva en cliente contra colisión de SKU
+    const cleanSkuInput = editingProduct.sku.trim().toLowerCase();
+    const skuConflict = products.find(
+      (p) => p.sku?.trim().toLowerCase() === cleanSkuInput && p.id !== editingProduct.id
+    );
+    if (skuConflict) {
+      setSaveFeedback({
+        type: 'error',
+        message: `El SKU "${editingProduct.sku.trim()}" ya está registrado en el producto "${skuConflict.name}". Por favor ingresa un SKU único.`,
+      });
+      return;
+    }
+
     if (!editingProduct?.price || Number(editingProduct.price) <= 0) {
       setSaveFeedback({ type: 'error', message: 'Por favor ingresa un precio válido mayor a 0.' });
       return;
@@ -958,7 +972,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
               <button
                 onClick={() => {
                   setEditingProduct({
-                    sku: `MPR-${Date.now().toString().slice(-4)}`,
+                    sku: `MPR-${Math.floor(100000 + Math.random() * 900000)}`,
                     name: '',
                     price: 0,
                     wholesale_price: 0,
@@ -1306,7 +1320,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToStore })
                   <button
                     onClick={() => {
                       setEditingProduct({
-                        sku: `MPR-${Date.now().toString().slice(-4)}`,
+                        sku: `MPR-${Math.floor(100000 + Math.random() * 900000)}`,
                         name: '',
                         price: 0,
                         wholesale_price: 0,
