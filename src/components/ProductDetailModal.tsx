@@ -108,34 +108,40 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   };
 
-  // Unified media gallery supporting photos and videos
+  // Unified media gallery supporting photos and videos without duplicates
   interface MediaItem {
     type: 'image' | 'video';
     url: string;
   }
 
-  const mediaList: MediaItem[] = [];
+  const galleryItems: MediaItem[] = [];
+  const seenMedia = new Set<string>();
+
   if (product.images && product.images.length > 0) {
     product.images.forEach((img) => {
-      if (img) mediaList.push({ type: 'image', url: img });
+      const cleanUrl = (img || '').trim();
+      if (cleanUrl && !seenMedia.has(cleanUrl)) {
+        seenMedia.add(cleanUrl);
+        galleryItems.push({ type: 'image', url: cleanUrl });
+      }
     });
-  } else {
-    mediaList.push({ type: 'image', url: '/mpr-brake-disc.png' });
   }
 
   if (product.videos && product.videos.length > 0) {
     product.videos.forEach((vid) => {
-      if (vid) mediaList.push({ type: 'video', url: vid });
+      const cleanUrl = (vid || '').trim();
+      if (cleanUrl && !seenMedia.has(cleanUrl)) {
+        seenMedia.add(cleanUrl);
+        galleryItems.push({ type: 'video', url: cleanUrl });
+      }
     });
   }
 
-  // Guarantee at least 4 visual views for aesthetics if single photo and no videos
-  const galleryItems: MediaItem[] =
-    mediaList.length === 1 && mediaList[0].type === 'image'
-      ? [mediaList[0], mediaList[0], mediaList[0], mediaList[0]]
-      : mediaList;
+  if (galleryItems.length === 0) {
+    galleryItems.push({ type: 'image', url: '/categories/repuestos.png' });
+  }
 
-  const currentMedia = galleryItems[selectedImage] || galleryItems[0] || { type: 'image', url: '/mpr-brake-disc.png' };
+  const currentMedia = galleryItems[selectedImage] || galleryItems[0] || { type: 'image', url: '/categories/repuestos.png' };
 
   // Related products (exclude current product)
   const relatedProducts = allProducts
@@ -240,43 +246,47 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* LEFT COLUMN: THUMBNAILS + LARGE HERO IMAGE SHOWCASE */}
           <section aria-label="Galería del repuesto" className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-4 sm:gap-6">
             
-            {/* Vertical thumbnails list (Photos & Videos) */}
-            <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible shrink-0 pb-2 sm:pb-0">
-              {galleryItems.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 p-2 border-2 transition-all shrink-0 flex items-center justify-center overflow-hidden group relative ${
-                    selectedImage === idx
-                      ? 'border-black ring-1 ring-black shadow-sm'
-                      : 'border-gray-200 hover:border-gray-400 opacity-80 hover:opacity-100'
-                  }`}
-                  aria-label={`Ver vista ${idx + 1} del producto`}
-                >
-                  {item.type === 'video' ? (
-                    <div className="w-full h-full bg-black rounded flex items-center justify-center relative overflow-hidden">
-                      <video src={item.url} className="w-full h-full object-cover opacity-60" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <Play className="w-5 h-5 text-white fill-white drop-shadow" />
+            {/* Vertical thumbnails list (Photos & Videos) - Only shown if product has more than 1 image/video */}
+            {galleryItems.length > 1 && (
+              <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible shrink-0 pb-2 sm:pb-0">
+                {galleryItems.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(idx)}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 p-2 border-2 transition-all shrink-0 flex items-center justify-center overflow-hidden group relative cursor-pointer ${
+                      selectedImage === idx
+                        ? 'border-black ring-1 ring-black shadow-sm'
+                        : 'border-gray-200 hover:border-gray-400 opacity-80 hover:opacity-100'
+                    }`}
+                    aria-label={`Ver vista ${idx + 1} del producto`}
+                  >
+                    {item.type === 'video' ? (
+                      <div className="w-full h-full bg-black rounded flex items-center justify-center relative overflow-hidden">
+                        <video src={item.url} className="w-full h-full object-cover opacity-60" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="w-5 h-5 text-white fill-white drop-shadow" />
+                        </div>
+                        <span className="absolute bottom-0 inset-x-0 bg-purple-700/90 text-[7px] sm:text-[8px] text-white font-extrabold uppercase text-center py-0.5">
+                          VIDEO
+                        </span>
                       </div>
-                      <span className="absolute bottom-0 inset-x-0 bg-purple-700/90 text-[7px] sm:text-[8px] text-white font-extrabold uppercase text-center py-0.5">
-                        VIDEO
-                      </span>
-                    </div>
-                  ) : (
-                    <img
-                      src={item.url}
-                      alt={`Vista ${idx + 1}`}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                    />
-                  )}
-                </button>
-              ))}
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt={`Vista ${idx + 1}`}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                      />
+                    )}
+                  </button>
+                ))}
 
-              <div className="hidden sm:flex items-center justify-center w-20 py-1 text-gray-400">
-                <ChevronDown className="w-4 h-4 animate-bounce" />
+                {galleryItems.length > 3 && (
+                  <div className="hidden sm:flex items-center justify-center w-20 py-1 text-gray-400">
+                    <ChevronDown className="w-4 h-4 animate-bounce" />
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {/* Main prominent display (Zoomable Image or HTML5 Video Player) */}
             <div className="flex-1">
